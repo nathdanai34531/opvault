@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -24,69 +25,105 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="bg-gray-100 text-gray-900 font-prompt">
     <div class="max-w-5xl mx-auto flex flex-col md:flex-row min-h-screen">
-        
+
         <!-- Sidebar -->
-        <aside class="w-full md:w-64 md:h-screen md:sticky top-0 bg-gray-900 text-white flex flex-col shrink-0 z-20 shadow-md md:shadow-none">
-            <div class="px-3 py-3 md:p-6 flex flex-col items-start gap-4 border-b border-gray-800 md:border-transparent">
+        <aside
+            class="w-full md:w-64 md:h-screen md:sticky top-0 bg-gray-900 text-white flex flex-col shrink-0 z-20 shadow-md md:shadow-none">
+            <div
+                class="px-3 py-3 md:p-6 flex flex-col items-start gap-4 border-b border-gray-800 md:border-transparent">
                 <div class="flex items-center justify-between w-full">
                     <!-- Mobile Back Button -->
-                    <a href="index.html" class="md:hidden inline-flex items-center gap-1 flex-shrink-0 text-[11px] font-bold text-gray-400 hover:text-white py-1 pr-2">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <a href="index.html"
+                        class="md:hidden inline-flex items-center gap-1 flex-shrink-0 text-[11px] font-bold text-gray-400 hover:text-white py-1 pr-2">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
                         กลับหน้าร้าน
                     </a>
-                    
+
                     <!-- Logo -->
-                    <h1 class="text-base sm:text-lg md:text-2xl font-extrabold tracking-tighter text-white m-0 whitespace-nowrap text-center md:text-left flex-grow md:flex-grow-0">OP<span class="text-yellow-400">.Vault</span> <span class="text-[10px] md:text-sm font-normal text-gray-400">Admin</span></h1>
-                    
+                    <h1
+                        class="text-base sm:text-lg md:text-2xl font-extrabold tracking-tighter text-white m-0 whitespace-nowrap text-center md:text-left flex-grow md:flex-grow-0">
+                        OP<span class="text-yellow-400">.Vault</span> <span
+                            class="text-[10px] md:text-sm font-normal text-gray-400">Admin</span></h1>
+
                     <!-- Stats -->
                     <div class="flex flex-col text-right flex-shrink-0">
-                        <div class="text-[10px] md:text-sm text-gray-400 leading-tight md:leading-normal">วันนี้: <span id="dash-today-sales" class="text-white font-bold">฿0</span></div>
-                        <div class="text-[10px] md:text-sm text-gray-400 leading-tight md:leading-normal">เดือนนี้: <span id="dash-month-sales" class="text-white font-bold">฿0</span></div>
+                        <div class="text-[10px] md:text-sm text-gray-400 leading-tight md:leading-normal">วันนี้: <span
+                                id="dash-today-sales" class="text-white font-bold">฿0</span></div>
+                        <div class="text-[10px] md:text-sm text-gray-400 leading-tight md:leading-normal">เดือนนี้:
+                            <span id="dash-month-sales" class="text-white font-bold">฿0</span></div>
                         <span id="dash-total-cards" class="hidden"></span>
                     </div>
                 </div>
 
                 <!-- Desktop Back Button -->
-                <a href="index.html" class="hidden md:inline-flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-white hover:bg-gray-800/60 rounded-lg px-2 py-1.5 -ml-2 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> 
+                <a href="index.html"
+                    class="hidden md:inline-flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-white hover:bg-gray-800/60 rounded-lg px-2 py-1.5 -ml-2 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
                     กลับหน้าร้าน
                 </a>
             </div>
-            <nav class="flex flex-row md:flex-col px-3 md:px-4 gap-1.5 md:gap-2 overflow-x-auto no-scrollbar pb-3 md:pb-0">
-                <button onclick="switchTab('manage-cards')" id="tab-manage-cards" class="whitespace-nowrap flex-1 md:w-full text-center md:text-left px-3 py-2 md:px-4 md:py-3 rounded-lg bg-gray-800 text-white font-medium md:mb-2 transition text-xs md:text-base border border-gray-700 md:border-transparent">จัดการการ์ด</button>
-                <button onclick="switchTab('credits')" id="tab-credits" class="whitespace-nowrap flex-1 md:w-full text-center md:text-left px-3 py-2 md:px-4 md:py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium md:mb-2 transition text-xs md:text-base border border-transparent">จัดการเครดิต</button>
-                <button onclick="switchTab('history')" id="tab-history" class="whitespace-nowrap flex-1 md:w-full text-center md:text-left px-3 py-2 md:px-4 md:py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium transition text-xs md:text-base border border-transparent">ประวัติการซื้อขาย</button>
+            <nav
+                class="flex flex-row md:flex-col px-3 md:px-4 gap-1.5 md:gap-2 overflow-x-auto no-scrollbar pb-3 md:pb-0">
+                <button onclick="switchTab('manage-cards')" id="tab-manage-cards"
+                    class="whitespace-nowrap flex-1 md:w-full text-center md:text-left px-3 py-2 md:px-4 md:py-3 rounded-lg bg-gray-800 text-white font-medium md:mb-2 transition text-xs md:text-base border border-gray-700 md:border-transparent">จัดการการ์ด</button>
+                <button onclick="switchTab('credits')" id="tab-credits"
+                    class="whitespace-nowrap flex-1 md:w-full text-center md:text-left px-3 py-2 md:px-4 md:py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium md:mb-2 transition text-xs md:text-base border border-transparent">จัดการเครดิต</button>
+                <button onclick="switchTab('history')" id="tab-history"
+                    class="whitespace-nowrap flex-1 md:w-full text-center md:text-left px-3 py-2 md:px-4 md:py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white font-medium transition text-xs md:text-base border border-transparent">ประวัติการซื้อขาย</button>
             </nav>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-grow p-4 md:p-8 bg-gray-50 min-h-screen md:h-screen md:overflow-y-auto w-full overflow-hidden relative">
+        <main
+            class="flex-grow p-4 md:p-8 bg-gray-50 min-h-screen md:h-screen md:overflow-y-auto w-full overflow-hidden relative">
 
-            
+
 
             <!-- Manage Cards Tab -->
             <div id="view-manage-cards" class="admin-view block">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-5">
                     <div class="flex-grow flex items-center gap-2 w-full sm:w-auto">
                         <div class="relative w-full sm:max-w-xs flex-grow">
-                            <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            <input type="text" id="admin-search-input" placeholder="ค้นหาการ์ด หรือวางรหัสตะกร้า..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-400 transition" oninput="handleAdminSearch()">
+                            <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <input type="text" id="admin-search-input" placeholder="ค้นหาการ์ด หรือวางรหัสตะกร้า..."
+                                class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-400 transition"
+                                oninput="handleAdminSearch()">
                         </div>
-                        <button onclick="parseCartCode()" class="shrink-0 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-700 transition" title="โหลดออเดอร์จากรหัสตะกร้า">โหลด</button>
+                        <button onclick="parseCartCode()"
+                            class="shrink-0 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-700 transition"
+                            title="โหลดออเดอร์จากรหัสตะกร้า">โหลด</button>
                     </div>
                     <div class="flex gap-2 w-full sm:w-auto mt-1 sm:mt-0">
-                        <button id="bulk-sell-btn" onclick="openOrderSummaryModal()" class="hidden w-full sm:w-auto bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-green-700 transition">สรุปยอด (<span id="bulk-count">0</span>)</button>
-                        <button onclick="openAddModal()" class="w-full sm:w-auto bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-800 transition">+ เพิ่มการ์ด</button>
+                        <button id="bulk-sell-btn" onclick="openOrderSummaryModal()"
+                            class="hidden w-full sm:w-auto bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-green-700 transition">สรุปยอด
+                            (<span id="bulk-count">0</span>)</button>
+                        <button onclick="openAddModal()"
+                            class="w-full sm:w-auto bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-800 transition">+
+                            เพิ่มการ์ด</button>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-140px)]">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-140px)]">
                     <table class="w-full text-left border-collapse min-w-[700px]">
                         <thead class="sticky top-0 z-10 shadow-[0_1px_0_0_#e5e7eb]">
                             <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                <th class="p-3 md:p-4 w-10 text-center"><input type="checkbox" id="select-all-cards" class="rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer" onchange="toggleSelectAllCards()"></th>
+                                <th class="p-3 md:p-4 w-10 text-center"><input type="checkbox" id="select-all-cards"
+                                        class="rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer"
+                                        onchange="toggleSelectAllCards()"></th>
                                 <th class="p-3 md:p-4 font-semibold w-16">รูปภาพ</th>
                                 <th class="p-3 md:p-4 font-semibold min-w-[150px]">ชื่อการ์ด / เซ็ต</th>
                                 <th class="p-3 md:p-4 font-semibold w-28">ราคา</th>
@@ -104,10 +141,12 @@
             <!-- History Tab -->
             <div id="view-history" class="admin-view hidden">
 
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-140px)]">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-140px)]">
                     <table class="w-full text-left border-collapse">
                         <thead class="sticky top-0 z-10 shadow-[0_1px_0_0_#e5e7eb]">
-                            <tr class="bg-gray-50 text-[10px] md:text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                            <tr
+                                class="bg-gray-50 text-[10px] md:text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-2 md:p-4 font-semibold">รหัส</th>
                                 <th class="p-2 md:p-4 font-semibold">วัน/เวลา</th>
                                 <th class="p-2 md:p-4 font-semibold">รายการ</th>
@@ -124,7 +163,9 @@
             <!-- Credits Tab -->
             <div id="view-credits" class="admin-view hidden">
                 <div class="flex justify-end mb-4 md:mb-5">
-                    <button onclick="openCreditModal()" class="w-full sm:w-auto bg-green-600 text-white px-4 py-3 sm:py-2.5 rounded-xl sm:rounded-lg text-sm font-bold shadow-md hover:bg-green-700 transition">+ อัปโหลดเครดิต</button>
+                    <button onclick="openCreditModal()"
+                        class="w-full sm:w-auto bg-green-600 text-white px-4 py-3 sm:py-2.5 rounded-xl sm:rounded-lg text-sm font-bold shadow-md hover:bg-green-700 transition">+
+                        อัปโหลดเครดิต</button>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="admin-credit-list">
@@ -136,56 +177,77 @@
     </div>
 
     <!-- Add/Edit Modal -->
-    <div id="card-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div id="card-modal"
+        class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[92vh]">
             <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
                 <h3 class="font-bold text-lg" id="modal-title">เพิ่มการ์ดใหม่</h3>
-                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 p-1"><svg class="w-5 h-5"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg></button>
             </div>
             <div class="p-5 overflow-y-auto flex-grow pb-safe">
                 <form id="card-form" class="space-y-4">
                     <input type="hidden" id="card-id">
-                    
-                    <div class="bg-blue-50/50 p-3 rounded-lg border border-blue-100 flex flex-col gap-2 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 bg-blue-600 text-white text-[8px] font-bold px-2 py-0.5 rounded-bl-lg">✨ AUTO-FETCH</div>
+
+                    <div
+                        class="bg-blue-50/50 p-3 rounded-lg border border-blue-100 flex flex-col gap-2 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 right-0 bg-blue-600 text-white text-[8px] font-bold px-2 py-0.5 rounded-bl-lg">
+                            ✨ AUTO-FETCH</div>
                         <label class="block text-xs font-bold text-blue-800">รหัสการ์ด (ดึงข้อมูลอัตโนมัติ)</label>
                         <div class="flex gap-2 items-stretch">
-                            <input type="text" id="card-fetch-code" placeholder="เช่น OP05-022" class="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none uppercase bg-white font-mono placeholder:font-sans">
-                            <button type="button" onclick="fetchCardData()" class="shrink-0 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-blue-700 transition flex gap-1.5 items-center">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <input type="text" id="card-fetch-code" placeholder="เช่น OP05-022"
+                                class="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none uppercase bg-white font-mono placeholder:font-sans">
+                            <button type="button" onclick="fetchCardData()"
+                                class="shrink-0 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-blue-700 transition flex gap-1.5 items-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
                                 ดึงข้อมูล
                             </button>
                         </div>
                     </div>
-                    
+
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">ชื่อการ์ด</label>
-                        <input type="text" id="card-name" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                        <input type="text" id="card-name" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">ราคา (บาท)</label>
-                        <input type="number" id="card-price" required min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                        <input type="number" id="card-price" required min="0"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">รูปภาพการ์ด (อัปโหลด หรือใส่ URL)</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">รูปภาพการ์ด (อัปโหลด หรือใส่
+                            URL)</label>
                         <div class="flex flex-col gap-2">
-                            <input type="file" id="card-image-file" accept="image/*" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900 outline-none bg-white" onchange="compressCardImage(event)">
+                            <input type="file" id="card-image-file" accept="image/*"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900 outline-none bg-white"
+                                onchange="compressCardImage(event)">
                             <div class="relative">
                                 <div class="absolute inset-0 flex items-center" aria-hidden="true">
                                     <div class="w-full border-t border-gray-200"></div>
                                 </div>
                                 <div class="relative flex justify-center">
-                                    <span class="px-2 bg-white text-[10px] text-gray-500">หรือระบุ URL (สำหรับโหลดจากเว็บ)</span>
+                                    <span class="px-2 bg-white text-[10px] text-gray-500">หรือระบุ URL
+                                        (สำหรับโหลดจากเว็บ)</span>
                                 </div>
                             </div>
-                            <input type="url" id="card-image" placeholder="https://..." class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                            <input type="url" id="card-image" placeholder="https://..."
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
                             <input type="hidden" id="card-image-base64">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">ระดับความแรร์ (Rarity)</label>
-                            <select id="card-rarity" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none bg-white">
+                            <select id="card-rarity"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none bg-white">
                                 <option value="Manga">Manga</option>
                                 <option value="SEC">SEC / AA</option>
                                 <option value="SR">SR</option>
@@ -198,7 +260,8 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">สี (Color)</label>
-                            <select id="card-color" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none bg-white">
+                            <select id="card-color"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none bg-white">
                                 <option value="red">Red</option>
                                 <option value="green">Green</option>
                                 <option value="blue">Blue</option>
@@ -210,47 +273,63 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">เซ็ต (Set / รหัส)</label>
-                        <input type="text" id="card-set" placeholder="ex. OP-05 · SEC AA" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                        <input type="text" id="card-set" placeholder="ex. OP-05 · SEC AA"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">ป้ายกำกับ (Badge / เกรด)</label>
-                        <input type="text" id="card-badge" placeholder="ex. Mint 10" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                        <input type="text" id="card-badge" placeholder="ex. Mint 10"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
                     </div>
                 </form>
             </div>
-            <div class="px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-3 shrink-0 flex-col sm:flex-row">
-                <button type="button" onclick="closeAddModal()" class="w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-200 order-2 sm:order-1 text-center border border-gray-200 bg-white sm:border-transparent sm:bg-transparent">ยกเลิก</button>
-                <button type="button" onclick="saveCard()" class="w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-semibold bg-gray-900 text-white hover:bg-gray-800 order-1 sm:order-2 shadow-md">บันทึกข้อมูล</button>
+            <div
+                class="px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-3 shrink-0 flex-col sm:flex-row">
+                <button type="button" onclick="closeAddModal()"
+                    class="w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-200 order-2 sm:order-1 text-center border border-gray-200 bg-white sm:border-transparent sm:bg-transparent">ยกเลิก</button>
+                <button type="button" onclick="saveCard()"
+                    class="w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-semibold bg-gray-900 text-white hover:bg-gray-800 order-1 sm:order-2 shadow-md">บันทึกข้อมูล</button>
             </div>
         </div>
     </div>
 
     <!-- Add Credit Modal -->
-    <div id="credit-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div id="credit-modal"
+        class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl flex flex-col">
             <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
                 <h3 class="font-bold text-lg">อัปโหลดเครดิตใหม่</h3>
-                <button onclick="closeCreditModal()" class="text-gray-400 hover:text-gray-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <button onclick="closeCreditModal()" class="text-gray-400 hover:text-gray-600 p-1"><svg class="w-5 h-5"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg></button>
             </div>
             <div class="p-5">
                 <form id="credit-form" class="space-y-4">
                     <input type="hidden" id="credit-id">
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">คำบรรยาย (ไม่บังคับ)</label>
-                        <input type="text" id="credit-desc" placeholder="เช่น ส่งของแล้วครับ, รีวิวจากลูกค้า" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-600 outline-none">
+                        <input type="text" id="credit-desc" placeholder="เช่น ส่งของแล้วครับ, รีวิวจากลูกค้า"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-600 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">เลือกรูปภาพ (เลือกเพิ่มทีละรูป หรือหลายรูปพร้อมกันได้)</label>
-                        <input type="file" id="credit-file" accept="image/*" multiple class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-600 outline-none bg-gray-50" onchange="handleFileSelect(event)">
-                        
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">เลือกรูปภาพ (เลือกเพิ่มทีละรูป
+                            หรือหลายรูปพร้อมกันได้)</label>
+                        <input type="file" id="credit-file" accept="image/*" multiple
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-600 outline-none bg-gray-50"
+                            onchange="handleFileSelect(event)">
+
                         <!-- Preview Container -->
                         <div id="image-previews" class="flex flex-wrap gap-2 mt-3"></div>
                     </div>
                 </form>
             </div>
             <div class="px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
-                <button type="button" onclick="closeCreditModal()" class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-200">ยกเลิก</button>
-                <button type="button" onclick="saveCredit()" class="px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700 shadow-md">อัปโหลด</button>
+                <button type="button" onclick="closeCreditModal()"
+                    class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-200">ยกเลิก</button>
+                <button type="button" onclick="saveCredit()"
+                    class="px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700 shadow-md">อัปโหลด</button>
             </div>
         </div>
     </div>
@@ -260,25 +339,36 @@
         <!-- Toolbar -->
         <div class="bg-gray-800 text-white px-4 py-3 flex justify-between items-center shrink-0 shadow-md">
             <div class="flex items-center gap-2">
-                <button onclick="closeImageEditor()" class="text-gray-300 hover:text-white p-2 bg-gray-700/50 rounded-lg">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button onclick="closeImageEditor()"
+                    class="text-gray-300 hover:text-white p-2 bg-gray-700/50 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
                 </button>
                 <span class="font-bold text-sm ml-2">เซ็นเซอร์รูปภาพ (ระบายเพื่อเบลอ)</span>
             </div>
             <div class="flex items-center gap-2">
-                <button id="editor-undo-btn" onclick="undoEditor()" class="text-gray-300 hover:text-white p-2 bg-gray-700/50 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                <button id="editor-undo-btn" onclick="undoEditor()"
+                    class="text-gray-300 hover:text-white p-2 bg-gray-700/50 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                    </svg>
                 </button>
-                <button onclick="saveImageEditor()" class="bg-green-500 hover:bg-green-600 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm">บันทึก</button>
+                <button onclick="saveImageEditor()"
+                    class="bg-green-500 hover:bg-green-600 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm">บันทึก</button>
             </div>
         </div>
-        
+
         <!-- Canvas Container -->
-        <div class="flex-grow bg-black relative overflow-hidden flex items-center justify-center p-4 touch-none" id="editor-canvas-container">
+        <div class="flex-grow bg-black relative overflow-hidden flex items-center justify-center p-4 touch-none"
+            id="editor-canvas-container">
             <!-- Canvas will be dynamically sized -->
-            <canvas id="editor-canvas" class="max-w-full max-h-full object-contain cursor-crosshair shadow-[0_0_20px_rgba(0,0,0,0.5)]"></canvas>
+            <canvas id="editor-canvas"
+                class="max-w-full max-h-full object-contain cursor-crosshair shadow-[0_0_20px_rgba(0,0,0,0.5)]"></canvas>
         </div>
-        
+
         <!-- Bottom Controls -->
         <div class="bg-gray-800 p-4 shrink-0 flex justify-center gap-6">
             <div class="flex flex-col items-center">
@@ -288,33 +378,44 @@
     </div>
 
     <!-- Order Summary Modal -->
-    <div id="order-summary-modal" class="fixed inset-0 bg-black/60 z-[110] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div id="order-summary-modal"
+        class="fixed inset-0 bg-black/60 z-[110] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div class="p-4 md:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <h3 class="text-lg md:text-xl font-bold text-gray-900">สรุปออเดอร์ (ตัดสต็อค)</h3>
-                <button onclick="closeOrderSummaryModal()" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-200 transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button onclick="closeOrderSummaryModal()"
+                    class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-200 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
                 </button>
             </div>
             <div class="p-4 md:p-6 overflow-y-auto flex-grow flex flex-col gap-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">ชื่อ/เบอร์โทร ลูกค้า (ถ้ามี)</label>
-                        <input type="text" id="order-customer" placeholder="เช่น 0812345678 หรือ IG: opvault" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 transition">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">ชื่อ/เบอร์โทร
+                            ลูกค้า (ถ้ามี)</label>
+                        <input type="text" id="order-customer" placeholder="เช่น 0812345678 หรือ IG: opvault"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 transition">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">วันที่ชำระเงิน</label>
-                        <input type="datetime-local" id="order-date" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 transition">
+                        <label
+                            class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">วันที่ชำระเงิน</label>
+                        <input type="datetime-local" id="order-date"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 transition">
                     </div>
                 </div>
-                
+
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">รายการสินค้า</label>
-                    <div id="order-items-list" class="border border-gray-200 rounded-lg divide-y divide-gray-100 text-sm max-h-48 overflow-y-auto">
+                    <label
+                        class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">รายการสินค้า</label>
+                    <div id="order-items-list"
+                        class="border border-gray-200 rounded-lg divide-y divide-gray-100 text-sm max-h-48 overflow-y-auto">
                         <!-- Injected by JS -->
                     </div>
                 </div>
-                
+
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600 text-sm">ยอดรวมสินค้า</span>
@@ -322,7 +423,9 @@
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600 text-sm">ส่วนลดรวมทั้งหมด (บาท)</span>
-                        <input type="number" id="order-discount" value="0" min="0" class="w-24 border border-gray-200 rounded-md px-2 py-1 text-right text-sm focus:outline-none focus:border-gray-400 transition" oninput="calculateOrderNetTotal()">
+                        <input type="number" id="order-discount" value="0" min="0"
+                            class="w-24 border border-gray-200 rounded-md px-2 py-1 text-right text-sm focus:outline-none focus:border-gray-400 transition"
+                            oninput="calculateOrderNetTotal()">
                     </div>
                     <div class="h-px w-full bg-gray-200 my-1"></div>
                     <div class="flex justify-between items-center">
@@ -332,12 +435,17 @@
                 </div>
             </div>
             <div class="p-4 md:p-6 border-t border-gray-100 bg-white flex flex-col sm:flex-row gap-3">
-                <button onclick="confirmOrder('reserved')" class="w-full sm:w-1/3 bg-orange-100 text-orange-700 py-3 rounded-xl font-bold hover:bg-orange-200 transition hidden">ติดจอง (Reserved)</button>
-                <button onclick="confirmOrder('sold')" class="w-full sm:flex-grow bg-green-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-green-700 transition">ตัดสต็อค (บันทึกยอดขาย)</button>
+                <button onclick="confirmOrder('reserved')"
+                    class="w-full sm:w-1/3 bg-orange-100 text-orange-700 py-3 rounded-xl font-bold hover:bg-orange-200 transition hidden">ติดจอง
+                    (Reserved)</button>
+                <button onclick="confirmOrder('sold')"
+                    class="w-full sm:flex-grow bg-green-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-green-700 transition">ตัดสต็อค
+                    (บันทึกยอดขาย)</button>
             </div>
         </div>
     </div>
-    
+
     <script src="admin.js"></script>
 </body>
+
 </html>
