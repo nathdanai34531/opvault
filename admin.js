@@ -47,6 +47,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 let selectedCards = new Set();
 let currentSearchTerm = '';
 
+function getOptimizedImageUrl(url, width = 300) {
+    if (!url) return '';
+    if (url.startsWith('data:') || url.startsWith('blob:') || !url.startsWith('http')) return url;
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=80`;
+}
+
 function updateDashboard() {
     let todaySales = 0;
     let monthSales = 0;
@@ -233,7 +239,7 @@ function renderAdminCards() {
                     <input type="checkbox" value="${card.id}" class="card-checkbox rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer" onchange="toggleCardSelection(${card.id})" ${isChecked}>
                 </td>
                 <td class="p-3 md:p-4" onclick="toggleCardSelection(${card.id}); document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked = !document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked;">
-                    <img src="${card.image}" class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200 cursor-pointer" loading="lazy">
+                    <img src="${getOptimizedImageUrl(card.image, 150)}" class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200 cursor-pointer" loading="lazy">
                 </td>
                 <td class="p-3 md:p-4" onclick="toggleCardSelection(${card.id}); document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked = !document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked;">
                     <div class="font-bold text-gray-800 text-sm cursor-pointer">${card.name}</div>
@@ -533,23 +539,23 @@ function renderAdminCredits() {
         const images = credit.images || [credit.image];
         
         if (images.length === 1) {
-            imagesHtml = `<img src="${images[0]}" class="w-full object-cover" style="height: 240px;" loading="lazy">`;
+            imagesHtml = `<img src="${getOptimizedImageUrl(images[0], 400)}" class="w-full object-cover" style="height: 240px;" loading="lazy">`;
         } else if (images.length === 2) {
             imagesHtml = `
             <div class="grid grid-cols-2 gap-0.5" style="height: 240px;">
-                <img src="${images[0]}" class="w-full h-full object-cover" loading="lazy">
-                <img src="${images[1]}" class="w-full h-full object-cover" loading="lazy">
+                <img src="${getOptimizedImageUrl(images[0], 400)}" class="w-full h-full object-cover" loading="lazy">
+                <img src="${getOptimizedImageUrl(images[1], 400)}" class="w-full h-full object-cover" loading="lazy">
             </div>`;
         } else {
             // 3 or more images
             const extra = images.length - 3;
             imagesHtml = `
             <div class="flex flex-col gap-0.5" style="height: 240px;">
-                <img src="${images[0]}" class="w-full h-1/2 object-cover" loading="lazy">
+                <img src="${getOptimizedImageUrl(images[0], 400)}" class="w-full h-1/2 object-cover" loading="lazy">
                 <div class="grid grid-cols-2 gap-0.5 h-1/2">
-                    <img src="${images[1]}" class="w-full h-full object-cover" loading="lazy">
+                    <img src="${getOptimizedImageUrl(images[1], 400)}" class="w-full h-full object-cover" loading="lazy">
                     <div class="relative w-full h-full">
-                        <img src="${images[2]}" class="w-full h-full object-cover" loading="lazy">
+                        <img src="${getOptimizedImageUrl(images[2], 400)}" class="w-full h-full object-cover" loading="lazy">
                         ${extra > 0 ? `<div class="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-lg backdrop-blur-[1px]">+${extra}</div>` : ''}
                     </div>
                 </div>
@@ -1004,7 +1010,7 @@ function openOrderSummaryModal() {
             orderHtml += `
                 <div class="p-3 flex items-center justify-between gap-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
                     <div class="flex items-center gap-3 overflow-hidden flex-1">
-                        <img src="${card.image}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200 shrink-0" loading="lazy">
+                        <img src="${getOptimizedImageUrl(card.image, 150)}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200 shrink-0" loading="lazy">
                         <div class="min-w-0">
                             <div class="font-bold text-gray-800 text-sm truncate">${card.name}</div>
                             <div class="text-xs text-gray-500 mt-1 truncate flex items-center gap-1.5">

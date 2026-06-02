@@ -118,6 +118,12 @@ let cart = [];
 let selectedCategories = new Set(['all']);
 let selectedColors = new Set(['all']);
 
+function getOptimizedImageUrl(url, width = 300) {
+    if (!url) return '';
+    if (url.startsWith('data:') || url.startsWith('blob:') || !url.startsWith('http')) return url;
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=80`;
+}
+
 function formatPrice(num) {
     return num.toLocaleString() + ' ฿';
 }
@@ -166,7 +172,7 @@ function renderCards() {
                 ${badgeHtml}
                 ${codeHtml}
                 <div class="relative w-full aspect-[3/4] bg-gray-200 cursor-pointer group" onclick="openLightbox(${card.id})">
-                    <img src="${card.image}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
+                    <img src="${getOptimizedImageUrl(card.image)}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
                         <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
@@ -309,7 +315,7 @@ function updateCartUI() {
             cartHtml += `
                 <div class="bg-white rounded-xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] flex relative w-full p-2 gap-3 items-stretch hover:border-blue-100 transition-colors">
                     <div class="relative w-[70px] shrink-0 bg-gray-100 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center" onclick="openLightbox(${item.id})">
-                        <img src="${item.image}" class="w-full h-full object-cover" loading="lazy">
+                        <img src="${getOptimizedImageUrl(item.image, 150)}" class="w-full h-full object-cover" loading="lazy">
                         ${item.badge ? `<span class="absolute top-1 left-1 bg-gray-900/90 text-white font-bold text-[7px] px-1.5 py-0.5 rounded-sm shadow-sm">${item.badge}</span>` : ''}
                     </div>
                     
@@ -424,6 +430,7 @@ function toggleCart() {
 
 function applyWatermark(imageSrc, callback) {
     const img = new Image();
+    img.crossOrigin = 'Anonymous';
     img.onload = function() {
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
@@ -483,8 +490,8 @@ function openLightbox(idOrSrc) {
     
     if (card) {
         // Mode 1: Trading Card
-        img.src = card.image;
-        applyWatermark(card.image, function(watermarkedSrc) {
+        img.src = getOptimizedImageUrl(card.image, 600);
+        applyWatermark(getOptimizedImageUrl(card.image, 600), function(watermarkedSrc) {
             img.src = watermarkedSrc;
         });
         
@@ -795,23 +802,23 @@ function renderCredits() {
         let imagesHtml = '';
         
         if (images.length === 1) {
-            imagesHtml = `<img src="${images[0]}" class="w-full cursor-pointer object-cover tap-effect" style="height: 240px;" onclick="openLightboxGallery(${credit.id}, 0)" loading="lazy">`;
+            imagesHtml = `<img src="${getOptimizedImageUrl(images[0], 400)}" class="w-full cursor-pointer object-cover tap-effect" style="height: 240px;" onclick="openLightboxGallery(${credit.id}, 0)" loading="lazy">`;
         } else if (images.length === 2) {
             imagesHtml = `
             <div class="grid grid-cols-2 gap-0.5" style="height: 240px;">
-                <img src="${images[0]}" class="w-full h-full object-cover cursor-pointer tap-effect" onclick="openLightboxGallery(${credit.id}, 0)" loading="lazy">
-                <img src="${images[1]}" class="w-full h-full object-cover cursor-pointer tap-effect" onclick="openLightboxGallery(${credit.id}, 1)" loading="lazy">
+                <img src="${getOptimizedImageUrl(images[0], 400)}" class="w-full h-full object-cover cursor-pointer tap-effect" onclick="openLightboxGallery(${credit.id}, 0)" loading="lazy">
+                <img src="${getOptimizedImageUrl(images[1], 400)}" class="w-full h-full object-cover cursor-pointer tap-effect" onclick="openLightboxGallery(${credit.id}, 1)" loading="lazy">
             </div>`;
         } else {
             // 3 or more images
             const extra = images.length - 3;
             imagesHtml = `
             <div class="flex flex-col gap-0.5" style="height: 240px;">
-                <img src="${images[0]}" class="w-full h-1/2 object-cover cursor-pointer tap-effect" onclick="openLightboxGallery(${credit.id}, 0)" loading="lazy">
+                <img src="${getOptimizedImageUrl(images[0], 400)}" class="w-full h-1/2 object-cover cursor-pointer tap-effect" onclick="openLightboxGallery(${credit.id}, 0)" loading="lazy">
                 <div class="grid grid-cols-2 gap-0.5 h-1/2">
-                    <img src="${images[1]}" class="w-full h-full object-cover cursor-pointer tap-effect" onclick="openLightboxGallery(${credit.id}, 1)" loading="lazy">
+                    <img src="${getOptimizedImageUrl(images[1], 400)}" class="w-full h-full object-cover cursor-pointer tap-effect" onclick="openLightboxGallery(${credit.id}, 1)" loading="lazy">
                     <div class="relative w-full h-full cursor-pointer tap-effect" onclick="openLightboxGallery(${credit.id}, 2)">
-                        <img src="${images[2]}" class="w-full h-full object-cover" loading="lazy">
+                        <img src="${getOptimizedImageUrl(images[2], 400)}" class="w-full h-full object-cover" loading="lazy">
                         ${extra > 0 ? `<div class="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-lg backdrop-blur-[1px]">+${extra}</div>` : ''}
                     </div>
                 </div>
@@ -864,7 +871,7 @@ function saveCartImage() {
                 ${cart.map(item => `
                     <div style="border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: #fff; display: flex; flex-direction: column;">
                         <div style="position: relative; width: 100%; padding-bottom: 133.33%; background: #f3f4f6;">
-                            <img src="${item.image}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+                            <img src="${getOptimizedImageUrl(item.image, 150)}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" loading="lazy">
                             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Ctext x='50%25' y='50%25' transform='rotate(-35 75 75)' text-anchor='middle' fill='rgba(255,255,255,0.35)' stroke='rgba(0,0,0,0.3)' stroke-width='1.5' font-size='20' font-family='sans-serif' font-weight='900' letter-spacing='2'%3EOP.VAULT%3C/text%3E%3C/svg%3E&quot;); background-repeat: repeat; z-index: 5;"></div>
                             ${item.badge ? `<div style="position: absolute; top: 6px; left: 6px; background: rgba(17, 24, 39, 0.9); color: white; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: bold; z-index: 10;">${item.badge}</div>` : ''}
                             ${item.code ? `<div style="position: absolute; top: 18px; right: 6px; color: rgba(255,255,255,0.9); font-size: 8px; font-weight: 900; letter-spacing: 0.5px; white-space: nowrap; text-align: right; text-shadow: 1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8), 0px 0px 4px rgba(0,0,0,1); z-index: 10;">${item.code}</div>` : ''}
@@ -1047,8 +1054,8 @@ function processBulkSearch() {
 
     foundList.innerHTML = bulkFoundCards.map((item, idx) => `
         <div class="flex items-center gap-2.5 p-2.5 bg-white hover:bg-gray-50 transition shrink-0 group">
-            <div class="relative w-10 h-14 shrink-0 rounded-md overflow-hidden shadow-sm border border-gray-200">
-                <img src="${item.image}" class="w-full h-full object-cover" loading="lazy">
+            <div class="w-10 h-14 shrink-0 rounded overflow-hidden border border-gray-200">
+                <img src="${getOptimizedImageUrl(item.image, 150)}" class="w-full h-full object-cover" loading="lazy">
             </div>
             <div class="flex-grow min-w-0 flex flex-col justify-center">
                 <div class="flex items-center gap-1.5 mb-0.5">
