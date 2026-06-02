@@ -1,0 +1,15 @@
+body { font-family: 'Prompt', sans-serif; background-color: #f9fafb;}
+.font-prompt { font-family: 'Prompt', sans-serif; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.tap-effect:active { transform: scale(0.95); transition: transform 0.1s; }
+
+#checkout-bar { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); transform: translateY(100%); z-index: 50; }
+#checkout-bar.show { transform: translateY(0); }
+
+.hidden-view { display: none !important; }
+select { -webkit-appearance: none; appearance: none; }
+
+/* Safe padding for bottom items on mobile */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
