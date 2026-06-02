@@ -214,6 +214,7 @@ function renderAdminCards() {
         return;
     }
     
+    let cardsHtml = '';
     filteredCards.forEach(card => {
         let colorText = 'text-gray-800';
         let colorBg = 'bg-gray-200';
@@ -226,7 +227,7 @@ function renderAdminCards() {
 
         const isChecked = selectedCards.has(card.id.toString()) ? 'checked' : '';
 
-        list.innerHTML += `
+        cardsHtml += `
             <tr class="hover:bg-gray-50 transition ${isChecked ? 'bg-blue-50/30' : ''}">
                 <td class="p-3 md:p-4 text-center">
                     <input type="checkbox" value="${card.id}" class="card-checkbox rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer" onchange="toggleCardSelection(${card.id})" ${isChecked}>
@@ -256,6 +257,7 @@ function renderAdminCards() {
             </tr>
         `;
     });
+    list.innerHTML = cardsHtml;
     
     // Sync select-all checkbox
     const visibleCheckboxes = document.querySelectorAll('.card-checkbox');
@@ -281,13 +283,14 @@ function renderHistory() {
     // Reverse to show newest first
     const reversed = [...history].reverse();
     
+    let historyHtml = '';
     reversed.forEach(order => {
         const d = new Date(order.date);
         const dateStr = `${d.toLocaleDateString('th-TH')}<br><span class="text-[8px] md:text-[10px] text-gray-400">${d.toLocaleTimeString('th-TH')}</span>`;
         
         let itemsHtml = order.items.map(i => `<div class="text-xs mb-1 text-gray-600">• ${i.name} (x${i.qty})</div>`).join('');
         
-        list.innerHTML += `
+        historyHtml += `
             <tr class="hover:bg-gray-50 transition border-b border-gray-100">
                 <td class="p-2 md:p-4 font-semibold text-gray-700 text-[10px] md:text-sm">${order.id}</td>
                 <td class="p-2 md:p-4 text-gray-500 text-[9px] md:text-xs">${dateStr}</td>
@@ -296,6 +299,7 @@ function renderHistory() {
             </tr>
         `;
     });
+    list.innerHTML = historyHtml;
 }
 
 function compressCardImage(event) {
@@ -520,6 +524,7 @@ function renderAdminCredits() {
         return b.date - a.date;
     });
     
+    let creditsHtml = '';
     sorted.forEach(credit => {
         const d = new Date(credit.date);
         const dateStr = d.toLocaleDateString('th-TH');
@@ -551,7 +556,7 @@ function renderAdminCredits() {
             </div>`;
         }
         
-        list.innerHTML += `
+        creditsHtml += `
             <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 flex flex-col group relative">
                 ${credit.isPinned ? `<div class="absolute top-2 left-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-20 flex items-center gap-1 border border-yellow-500/30"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>ปักหมุด</div>` : ''}
                 <div class="relative bg-gray-100 overflow-hidden">
@@ -578,6 +583,7 @@ function renderAdminCredits() {
             </div>
         `;
     });
+    list.innerHTML = creditsHtml;
 }
 
 let currentUploadFiles = [];
@@ -604,8 +610,9 @@ function renderPreviews() {
     if (!container) return;
     container.innerHTML = '';
     
+    let previewsHtml = '';
     existingCreditImages.forEach((base64, index) => {
-        container.innerHTML += `
+        previewsHtml += `
             <div class="relative w-16 h-16 rounded overflow-hidden border border-gray-200 shrink-0 group">
                 <img src="${base64}" class="w-full h-full object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center gap-1">
@@ -622,7 +629,7 @@ function renderPreviews() {
 
     currentUploadFiles.forEach((file, index) => {
         const url = URL.createObjectURL(file);
-        container.innerHTML += `
+        previewsHtml += `
             <div class="relative w-16 h-16 rounded overflow-hidden border border-green-300 shrink-0 group">
                 <img src="${url}" class="w-full h-full object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center gap-1">
@@ -636,6 +643,7 @@ function renderPreviews() {
             </div>
         `;
     });
+    container.innerHTML = previewsHtml;
 }
 
 function openCreditModal() {
@@ -988,11 +996,12 @@ function openOrderSummaryModal() {
     list.innerHTML = '';
     
     let subtotal = 0;
+    let orderHtml = '';
     
     cards.forEach(card => {
         if (selectedCards.has(card.id.toString())) {
             subtotal += card.price;
-            list.innerHTML += `
+            orderHtml += `
                 <div class="p-3 flex items-center justify-between gap-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
                     <div class="flex items-center gap-3 overflow-hidden flex-1">
                         <img src="${card.image}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200 shrink-0" loading="lazy">
@@ -1015,6 +1024,7 @@ function openOrderSummaryModal() {
             `;
         }
     });
+    list.innerHTML = orderHtml;
     
     document.getElementById('order-subtotal').textContent = formatPrice(subtotal);
     document.getElementById('order-discount').value = 0;

@@ -152,6 +152,7 @@ function renderCards() {
         return;
     }
 
+    let cardsHtml = '';
     filtered.forEach(card => {
         let badgeHtml = card.badge ? `<span class="absolute top-1.5 left-1.5 z-10 bg-gray-900/90 backdrop-blur-sm text-white font-bold text-[7px] px-1.5 py-0.5 rounded-sm">${card.badge}</span>` : '';
         let codeHtml = card.code ? `<span class="absolute top-4 right-1.5 z-10 text-white/90 font-extrabold text-[7px] tracking-wide whitespace-nowrap text-right" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8), 0px 0px 4px rgba(0,0,0,1);">${card.code}</span>` : '';
@@ -182,8 +183,9 @@ function renderCards() {
                 </div>
             </div>
         `;
-        container.innerHTML += html;
+        cardsHtml += html;
     });
+    container.innerHTML = cardsHtml;
 }
 
 function updateGallery() {
@@ -302,8 +304,9 @@ function updateCartUI() {
     if(cart.length === 0) {
         cartContainer.innerHTML = `<div class="col-span-full text-center text-gray-400 py-8 text-sm">ตะกร้าว่างเปล่า</div>`;
     } else {
+        let cartHtml = '';
         cart.forEach((item, index) => {
-            cartContainer.innerHTML += `
+            cartHtml += `
                 <div class="bg-white rounded-xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] flex relative w-full p-2 gap-3 items-stretch hover:border-blue-100 transition-colors">
                     <div class="relative w-[70px] shrink-0 bg-gray-100 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center" onclick="openLightbox(${item.id})">
                         <img src="${item.image}" class="w-full h-full object-cover" loading="lazy">
@@ -337,6 +340,7 @@ function updateCartUI() {
                 </div>
             `;
         });
+        cartContainer.innerHTML = cartHtml;
     }
 
     document.getElementById('cart-total').textContent = formatPrice(total);
