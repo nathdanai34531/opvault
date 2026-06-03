@@ -2,33 +2,35 @@
     <!-- Background -->
     <rect width="500" height="200" fill="#111827" />
     
-    <g transform="translate(42, 0)">
-        <!-- Letter O -->
-        <circle cx="100" cy="100" r="65" fill="#ffffff" />
+    <g transform="translate(36, 19)">
+        <!-- Letter O (Golden Ratio Outer Diameter = 161.8) -->
+        <circle cx="80.9" cy="80.9" r="80.9" fill="#ffffff" />
         
-        <!-- Negative Space Anchor inside O -->
-        <g fill="#111827" stroke="#111827">
-            <!-- Top Ring -->
-            <circle cx="100" cy="62" r="10" fill="none" stroke-width="6" />
+        <!-- Negative Space Anchor (Fat and Bold) -->
+        <g fill="#111827" stroke="none">
+            <!-- Ring -->
+            <circle cx="80.9" cy="45.5" r="23.6" />
             <!-- Stem -->
-            <rect x="95" y="72" width="10" height="65" stroke="none" />
+            <rect x="69.1" y="45.5" width="23.6" height="74.5" />
             <!-- Crossbar -->
-            <rect x="70" y="82" width="60" height="10" rx="3" stroke="none" />
-            <!-- Bottom Hook -->
-            <path d="M 55 105 C 55 150, 145 150, 145 105" fill="none" stroke-width="12" stroke-linecap="round" />
-            <!-- Left Fluke (Triangle) -->
-            <polygon points="43,108 67,108 55,85" stroke="none" />
-            <!-- Right Fluke (Triangle) -->
-            <polygon points="133,108 157,108 145,85" stroke="none" />
+            <rect x="38.2" y="55" width="85.4" height="23.6" rx="6" />
+            <!-- Hook -->
+            <path d="M 30.9 100 A 50 50 0 0 0 130.9 100 L 104.5 100 A 26.4 26.4 0 0 1 57.3 100 Z" />
+            <!-- Left Fluke -->
+            <polygon points="11.8,100 50,100 30.9,70" />
+            <!-- Right Fluke -->
+            <polygon points="111.8,100 150,100 130.9,70" />
         </g>
+        <!-- Ring inner hole -->
+        <circle cx="80.9" cy="45.5" r="10" fill="#ffffff" />
 
-        <!-- Letter P -->
-        <path d="M 180 35 L 240 35 C 280 35, 280 115, 240 115 L 215 115 L 215 165 L 180 165 Z" fill="#ffffff" />
+        <!-- Letter P (Golden Ratio Proportions) -->
+        <!-- Stem width 38.2, Outer arc radius 50 -->
+        <path d="M 185.4 0 L 235.4 0 A 50 50 0 0 1 235.4 100 L 223.6 100 L 223.6 161.8 L 185.4 161.8 Z" fill="#ffffff" />
         <!-- P Inner Hole -->
-        <path d="M 215 65 L 235 65 C 245 65, 245 85, 235 85 L 215 85 Z" fill="#111827" />
+        <path d="M 223.6 38.2 L 235.4 38.2 A 11.8 11.8 0 0 1 235.4 61.8 L 223.6 61.8 Z" fill="#111827" />
 
-        <!-- Letter V (Cyan) - Ligature / Merged into P -->
-        <!-- Shifted left to touch/intersect the P curve -->
-        <polygon points="240,35 277,35 310,115 343,35 380,35 328,165 292,165" fill="#06b6d4" />
+        <!-- Letter V (Cyan, shifted to touch P exactly at its peak) -->
+        <polygon points="266.3,0 309.0,0 347.2,100 385.4,0 428.1,0 366.3,161.8 328.1,161.8" fill="#06b6d4" />
     </g>
 </svg>
