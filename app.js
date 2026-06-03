@@ -1,3 +1,49 @@
+
+let lightboxPanzoom;
+function initPanzoom() {
+    if (!lightboxPanzoom && window.Panzoom) {
+        const imgElement = document.getElementById('lightbox-img');
+        lightboxPanzoom = Panzoom(imgElement, {
+            maxScale: 5,
+            minScale: 1,
+            contain: 'outside',
+            step: 0.3
+        });
+        const container = document.getElementById('lightbox-img-container');
+        container.addEventListener('wheel', lightboxPanzoom.zoomWithWheel);
+        
+        // Double tap to zoom in/out
+        let lastTap = 0;
+        imgElement.addEventListener('touchend', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                e.preventDefault();
+                if (lightboxPanzoom.getScale() > 1.5) {
+                    lightboxPanzoom.zoom(1, { animate: true });
+                    setTimeout(() => lightboxPanzoom.pan(0, 0), 10);
+                } else {
+                    const touch = e.changedTouches[0];
+                    lightboxPanzoom.zoomToPoint(3, { clientX: touch.clientX, clientY: touch.clientY }, { animate: true });
+                }
+            }
+            lastTap = currentTime;
+        });
+        
+        // Double click to zoom in/out
+        imgElement.addEventListener('dblclick', function(e) {
+            if (lightboxPanzoom.getScale() > 1.5) {
+                lightboxPanzoom.zoom(1, { animate: true });
+                setTimeout(() => lightboxPanzoom.pan(0, 0), 10);
+            } else {
+                lightboxPanzoom.zoomToPoint(3, { clientX: e.clientX, clientY: e.clientY }, { animate: true });
+            }
+        });
+    } else if (lightboxPanzoom) {
+        setTimeout(() => lightboxPanzoom.reset({ animate: false }), 10);
+    }
+}
+
 // Data Initialize
 const imagePool = ['images/card1.png', 'images/card2.png', 'images/card3.png', 'images/card4.png', 'images/card5.png', 'images/card6.png', 'images/card7.png', 'images/card8.png', 'images/card9.png'];
 const rarities = ['Manga', 'SEC', 'SR', 'Leader', 'R', 'UC', 'C'];
@@ -484,6 +530,7 @@ function applyWatermark(imageSrc, callback) {
     };
     img.onerror = () => callback(imageSrc);
     img.src = imageSrc;
+    initPanzoom();
 }
 
 function openLightbox(idOrSrc) {
@@ -506,6 +553,7 @@ function openLightbox(idOrSrc) {
         applyWatermark(getOptimizedImageUrl(card.image, 600), function(watermarkedSrc) {
             img.src = watermarkedSrc;
         });
+        initPanzoom();
         
         const inCart = cart.some(i => i.id === card.id);
         const btnClass = inCart 
@@ -695,6 +743,7 @@ function openLightboxGallery(creditId, startIndex) {
         document.getElementById('lightbox-img').parentElement.classList.remove('scale-95', 'opacity-0');
     }, 10);
     document.body.style.overflow = 'hidden';
+    initPanzoom();
 }
 
 function updateLightboxGalleryUI() {
@@ -757,6 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function handleSwipe() {
     const swipeThreshold = 50;
+    if (typeof lightboxPanzoom !== 'undefined' && lightboxPanzoom && lightboxPanzoom.getScale() > 1.05) return;
     if (touchendX < touchstartX - swipeThreshold) {
         // Swiped left, go next
         if (!document.getElementById('lightbox').classList.contains('hidden')) {
