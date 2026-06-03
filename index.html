@@ -502,8 +502,11 @@
         <!-- Hamburger Menu Overlay -->
         <div id="menu-overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/60 z-[90] hidden backdrop-blur-sm transition-opacity opacity-0"></div>
 
-        <!-- Hamburger Menu Drawer -->
-        <div id="side-menu" class="fixed top-0 right-0 h-full w-64 bg-white shadow-[0_0_40px_rgba(0,0,0,0.5)] z-[100] transform translate-x-full transition-transform duration-300 flex flex-col max-w-[80vw]">
+        <!-- Hamburger Menu Drawer Container for Desktop Alignment -->
+        <div class="fixed inset-0 z-[100] pointer-events-none flex justify-center">
+            <div class="w-full max-w-md relative flex justify-end h-full">
+                <!-- Hamburger Menu Drawer -->
+                <div id="side-menu" class="w-64 h-full bg-white shadow-[0_0_40px_rgba(0,0,0,0.5)] pointer-events-auto transform translate-x-full transition-transform duration-300 flex flex-col max-w-[80vw]">
             <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-900 text-white shrink-0">
                 <h3 class="font-extrabold text-base flex items-center gap-2">
                     <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
@@ -546,6 +549,8 @@
                     ระบบจัดการร้าน
                 </a>
             </div>
+        </div>
+        </div>
         </div>
 
         <script src="app.js"></script>
