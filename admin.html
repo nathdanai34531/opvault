@@ -26,8 +26,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="bg-gray-100 text-gray-900 font-prompt">
-    <div class="max-w-5xl mx-auto flex flex-col md:flex-row min-h-screen">
+<body class="bg-gray-100 text-gray-900 font-prompt overflow-hidden h-[100dvh]">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row h-full">
 
         <!-- Sidebar -->
         <aside
@@ -85,13 +85,11 @@
 
         <!-- Main Content -->
         <main
-            class="flex-grow p-4 md:p-8 bg-gray-50 min-h-screen md:h-screen md:overflow-y-auto w-full overflow-hidden relative">
-
-
+            class="flex-grow flex flex-col p-4 md:p-8 bg-gray-50 h-full w-full overflow-hidden relative">
 
             <!-- Manage Cards Tab -->
-            <div id="view-manage-cards" class="admin-view block">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-5">
+            <div id="view-manage-cards" class="admin-view flex-1 flex flex-col overflow-hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-5 shrink-0">
                     <div class="flex-grow flex items-center gap-2 w-full sm:w-auto">
                         <div class="relative w-full sm:max-w-xs flex-grow">
                             <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none"
@@ -131,7 +129,7 @@
                 </div>
 
                 <div
-                    class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-140px)] relative">
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 overflow-x-auto overflow-y-auto relative">
                     <table class="w-full text-left border-collapse">
                         <thead class="sticky top-0 z-40 bg-gray-50 shadow-[0_1px_0_0_#e5e7eb]">
                             <tr class="text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
@@ -186,10 +184,10 @@
             </div>
 
             <!-- History Tab -->
-            <div id="view-history" class="admin-view hidden">
+            <div id="view-history" class="admin-view hidden flex-1 flex flex-col overflow-hidden">
 
                 <div
-                    class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-140px)]">
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 overflow-x-auto overflow-y-auto relative">
                     <table class="w-full text-left border-collapse">
                         <thead class="sticky top-0 z-10 shadow-[0_1px_0_0_#e5e7eb]">
                             <tr
@@ -238,14 +236,14 @@
             </div>
 
             <!-- Credits Tab -->
-            <div id="view-credits" class="admin-view hidden">
-                <div class="flex justify-end mb-4 md:mb-5">
+            <div id="view-credits" class="admin-view hidden flex-1 flex flex-col overflow-hidden">
+                <div class="flex justify-end mb-4 md:mb-5 shrink-0">
                     <button onclick="openCreditModal()"
                         class="w-full sm:w-auto bg-green-600 text-white px-4 py-3 sm:py-2.5 rounded-xl sm:rounded-lg text-sm font-bold shadow-md hover:bg-green-700 transition">+
                         อัปโหลดเครดิต</button>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="admin-credit-list">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 flex-1 overflow-y-auto pb-10 content-start" id="admin-credit-list">
                     <!-- Skeletons -->
                     <div class="bg-gray-200 rounded-lg shadow-sm aspect-[3/4] relative overflow-hidden"><div class="skeleton-sweep"></div></div>
                     <div class="bg-gray-200 rounded-lg shadow-sm aspect-[3/4] relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div>
