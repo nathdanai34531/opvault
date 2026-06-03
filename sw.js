@@ -1,7 +1,10 @@
 const CACHE_NAME = 'opvault-cache-v1';
 const urlsToCache = [
-  './index.html',
-  './app.js'
+  '/',
+  '/index.html',
+  '/app.js',
+  '/admin.html',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', event => {
