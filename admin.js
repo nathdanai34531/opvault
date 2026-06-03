@@ -479,17 +479,31 @@ async function autoFetchCardData() {
     status.textContent = "กำลังเชื่อมต่อฐานข้อมูล...";
 
     try {
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
         const targetUrl = `https://onepiece.limitlesstcg.com/cards/${cardId}`;
+        let html = '';
+
+        try {
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+            if (response.ok) {
+                const data = await response.json();
+                if (data.contents && data.contents.length > 500) {
+                    html = data.contents;
+                }
+            }
+        } catch (e) {
+            console.warn("AllOrigins proxy failed, trying fallback...");
+        }
+
+        if (!html) {
+            const fallbackUrl = `https://api.codetabs.com/v1/proxy/?quest=${targetUrl}`;
+            const fallbackResponse = await fetch(fallbackUrl);
+            if (!fallbackResponse.ok) throw new Error('เกิดข้อผิดพลาดในการเชื่อมต่อ (Network Error)');
+            html = await fallbackResponse.text();
+        }
         
-        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
-        if (!response.ok) throw new Error('Network response was not ok');
-        
-        const data = await response.json();
-        const html = data.contents;
-        
-        if (!html || html.includes('Page Not Found') || html.includes('<title>Limitless</title>')) {
-             throw new Error('ไม่พบข้อมูลการ์ดนี้ในระบบ');
+        if (!html || html.includes('<title>Page not found') || html.includes('Page Not Found') || html.includes('<title>Limitless</title>')) {
+             throw new Error('ไม่พบรหัสการ์ดนี้ในระบบ LimitlessTCG');
         }
 
         const parser = new DOMParser();
@@ -501,7 +515,8 @@ async function autoFetchCardData() {
         if(!cardName) {
             const ogTitle = doc.querySelector('meta[property="og:title"]');
             if(ogTitle) {
-                 cardName = ogTitle.getAttribute('content').split('(')[0].trim();
+                 const content = ogTitle.getAttribute('content');
+                 cardName = content ? content.split('(')[0].trim() : '';
             }
         }
 
@@ -539,7 +554,7 @@ async function autoFetchCardData() {
         
     } catch (error) {
         console.error("AutoFetch Error:", error);
-        status.textContent = "❌ ไม่พบข้อมูล หรือรหัสผิด";
+        status.textContent = `❌ ${error.message}`;
         status.classList.remove('text-gray-500');
         status.classList.add('text-red-500');
     } finally {
