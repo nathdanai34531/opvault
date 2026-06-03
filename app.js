@@ -7,7 +7,8 @@ function initPanzoom() {
             maxScale: 10,
             minScale: 1,
             contain: 'outside',
-            step: 0.3
+            step: 0.3,
+            canvas: true
         });
         const container = document.getElementById('lightbox-img-container');
         container.addEventListener('wheel', lightboxPanzoom.zoomWithWheel);
