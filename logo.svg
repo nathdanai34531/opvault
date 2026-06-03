@@ -4,7 +4,7 @@
     
     <g transform="translate(31, 0)">
         
-        <!-- 1. Letter P (Drawn first so V and O can overlap it) -->
+        <!-- 1. Letter P (No Gap) -->
         <g fill="#ffffff">
             <!-- P Stem -->
             <rect x="150" y="40" width="40" height="120" />
@@ -17,32 +17,23 @@
         <!-- 2. Letter V (Cyan) - Drawn over P to create the perfect angled overlap -->
         <polygon points="255,40 295,40 335,120 375,40 415,40 355,160 315,160" fill="#38bdf8" />
 
-        <!-- 3. Letter O Knockout Border - Creates the crescent cutout on P -->
-        <circle cx="90" cy="100" r="70" fill="#111827" />
-
-        <!-- 4. Letter O (White) - Perfectly Round -->
+        <!-- 3. Letter O (White) - Perfectly Round, no knockout border on P -->
         <circle cx="90" cy="100" r="62" fill="#ffffff" />
         
-        <!-- 5. Anchor (Dark) - Negative space inside O -->
+        <!-- 4. Anchor (Dark) - Negative space inside O (Classic smooth shape) -->
         <g fill="#111827">
             <!-- Top Ring -->
-            <circle cx="90" cy="53" r="12" />
-            <!-- Top Ring Hole -->
-            <circle cx="90" cy="53" r="5" fill="#ffffff" />
+            <circle cx="90" cy="55" r="10" stroke="#111827" stroke-width="6" fill="none" />
             <!-- Stem -->
-            <rect x="85" y="55" width="10" height="60" />
+            <rect x="85" y="65" width="10" height="60" />
             <!-- Crossbar -->
-            <rect x="65" y="68" width="50" height="9" rx="2" />
-            <!-- Anchor Hook with Sharp Flukes and Pointed Bottom -->
-            <path d="M 45 105 
-                     L 52 87 
-                     L 60 100 
-                     C 60 125, 75 130, 90 135 
-                     C 105 130, 120 125, 120 100 
-                     L 128 87 
-                     L 135 105 
-                     C 135 145, 110 155, 90 160 
-                     C 70 155, 45 145, 45 105 Z" />
+            <rect x="60" y="75" width="60" height="10" rx="3" />
+            <!-- Anchor Hook (Smooth crescent) -->
+            <path d="M 50 115 C 50 150, 130 150, 130 115" fill="none" stroke="#111827" stroke-width="12" stroke-linecap="round" />
+            <!-- Left Fluke (Triangle pointing up) -->
+            <polygon points="38,118 62,118 50,95" />
+            <!-- Right Fluke (Triangle pointing up) -->
+            <polygon points="118,118 142,118 130,95" />
         </g>
         
     </g>
