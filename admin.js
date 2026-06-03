@@ -483,23 +483,21 @@ async function autoFetchCardData() {
         let html = '';
 
         try {
-            const proxyUrl = 'https://api.allorigins.win/get?url=';
-            const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+            const primaryUrl = `https://api.codetabs.com/v1/proxy/?quest=${targetUrl}`;
+            const response = await fetch(primaryUrl);
             if (response.ok) {
-                const data = await response.json();
-                if (data.contents && data.contents.length > 500) {
-                    html = data.contents;
-                }
+                html = await response.text();
             }
         } catch (e) {
-            console.warn("AllOrigins proxy failed, trying fallback...");
+            console.warn("Codetabs proxy failed, trying fallback...");
         }
 
         if (!html) {
-            const fallbackUrl = `https://api.codetabs.com/v1/proxy/?quest=${targetUrl}`;
-            const fallbackResponse = await fetch(fallbackUrl);
+            const fallbackUrl = 'https://api.allorigins.win/get?url=';
+            const fallbackResponse = await fetch(fallbackUrl + encodeURIComponent(targetUrl));
             if (!fallbackResponse.ok) throw new Error('เกิดข้อผิดพลาดในการเชื่อมต่อ (Network Error)');
-            html = await fallbackResponse.text();
+            const data = await fallbackResponse.json();
+            html = data.contents;
         }
         
         if (!html || html.includes('<title>Page not found') || html.includes('Page Not Found') || html.includes('<title>Limitless</title>')) {
@@ -530,10 +528,21 @@ async function autoFetchCardData() {
         // Extract Color
         const colorSpan = doc.querySelector('.card-text-type span[data-tooltip="Color"]');
         let cardColor = colorSpan ? colorSpan.textContent.trim().toLowerCase() : '';
+
+        // Extract Category for Rarity fallback
+        const categorySpan = doc.querySelector('.card-text-type span[data-tooltip="Category"]');
+        let cardCategory = categorySpan ? categorySpan.textContent.trim() : '';
         
         // Populate Form
         if(cardName) document.getElementById('card-name').value = cardName;
         if(imageUrl) document.getElementById('card-image').value = imageUrl;
+        
+        if (cardCategory === 'Leader') {
+            document.getElementById('card-rarity').value = 'Leader';
+        } else {
+            // Force user to select rarity since LimitlessTCG doesn't provide it clearly
+            document.getElementById('card-rarity').value = '';
+        }
         
         if(cardColor) {
             const colorSelect = document.getElementById('card-color');
