@@ -236,7 +236,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-let cart = [];
+let cart = JSON.parse(localStorage.getItem('opvault_cart')) || [];
+document.addEventListener('DOMContentLoaded', updateCartUI);
 let selectedCategories = new Set(['all']);
 let selectedColors = new Set(['all']);
 
@@ -433,6 +434,7 @@ function addToCart(id) {
 }
 
 function updateCartUI() {
+    localStorage.setItem('opvault_cart', JSON.stringify(cart));
     const badge = document.getElementById('cart-badge');
     const miniCart = document.getElementById('mini-cart');
     const miniQty = document.getElementById('mini-cart-qty');
