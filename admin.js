@@ -459,9 +459,104 @@ function compressCardImage(event) {
     reader.readAsDataURL(file);
 }
 
+async function autoFetchCardData() {
+    const cardSetInput = document.getElementById('card-set');
+    const cardId = cardSetInput.value.trim().toUpperCase();
+    if (!cardId) {
+        alert("กรุณากรอกรหัสการ์ด (Card Code) ก่อนดึงข้อมูล");
+        return;
+    }
+
+    const btn = document.getElementById('btn-fetch-data');
+    const status = document.getElementById('fetch-status');
+    const originalBtnText = btn.innerHTML;
+    
+    btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>กำลังดึง...</span>`;
+    btn.disabled = true;
+    status.classList.remove('hidden');
+    status.classList.remove('text-red-500', 'text-green-500');
+    status.classList.add('text-gray-500');
+    status.textContent = "กำลังเชื่อมต่อฐานข้อมูล...";
+
+    try {
+        const proxyUrl = 'https://api.allorigins.win/get?url=';
+        const targetUrl = `https://onepiece.limitlesstcg.com/cards/${cardId}`;
+        
+        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        const html = data.contents;
+        
+        if (!html || html.includes('Page Not Found') || html.includes('<title>Limitless</title>')) {
+             throw new Error('ไม่พบข้อมูลการ์ดนี้ในระบบ');
+        }
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Extract Name
+        const nameEl = doc.querySelector('.card-text-name a');
+        let cardName = nameEl ? nameEl.textContent.trim() : '';
+        if(!cardName) {
+            const ogTitle = doc.querySelector('meta[property="og:title"]');
+            if(ogTitle) {
+                 cardName = ogTitle.getAttribute('content').split('(')[0].trim();
+            }
+        }
+
+        // Extract Image
+        const imgEl = doc.querySelector('meta[property="og:image"]');
+        let imageUrl = imgEl ? imgEl.getAttribute('content') : '';
+        if (imageUrl && !imageUrl.startsWith('http')) {
+            imageUrl = 'https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com' + imageUrl;
+        }
+
+        // Extract Color
+        const colorSpan = doc.querySelector('.card-text-type span[data-tooltip="Color"]');
+        let cardColor = colorSpan ? colorSpan.textContent.trim().toLowerCase() : '';
+        
+        // Populate Form
+        if(cardName) document.getElementById('card-name').value = cardName;
+        if(imageUrl) document.getElementById('card-image').value = imageUrl;
+        
+        if(cardColor) {
+            const colorSelect = document.getElementById('card-color');
+            const options = Array.from(colorSelect.options).map(o => o.value);
+            // check if exact match
+            if(options.includes(cardColor)) {
+                colorSelect.value = cardColor;
+            } else if (cardColor.includes('/')) {
+                // Multi-color, for now just pick the first color
+                const firstColor = cardColor.split('/')[0];
+                if(options.includes(firstColor)) colorSelect.value = firstColor;
+            }
+        }
+
+        status.textContent = "✅ ดึงข้อมูลสำเร็จ!";
+        status.classList.remove('text-gray-500');
+        status.classList.add('text-green-500');
+        
+    } catch (error) {
+        console.error("AutoFetch Error:", error);
+        status.textContent = "❌ ไม่พบข้อมูล หรือรหัสผิด";
+        status.classList.remove('text-gray-500');
+        status.classList.add('text-red-500');
+    } finally {
+        btn.innerHTML = originalBtnText;
+        btn.disabled = false;
+        
+        setTimeout(() => {
+            status.classList.add('hidden');
+        }, 3000);
+    }
+}
+
 function openAddModal() {
     document.getElementById('card-form').reset();
     document.getElementById('card-id').value = '';
+    const status = document.getElementById('fetch-status');
+    if(status) status.classList.add('hidden');
     document.getElementById('card-image-base64').value = '';
     document.getElementById('modal-title').textContent = 'เพิ่มการ์ดใหม่';
     document.getElementById('card-modal').classList.remove('hidden');
