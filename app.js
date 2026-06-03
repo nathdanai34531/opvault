@@ -65,6 +65,16 @@ function closeAllModals() {
         bulkSearch.classList.add('hidden');
     }
     
+    const sideMenu = document.getElementById('side-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    if (sideMenu && !sideMenu.classList.contains('translate-x-full')) {
+        sideMenu.classList.add('translate-x-full');
+        if (menuOverlay) {
+            menuOverlay.classList.add('opacity-0');
+            setTimeout(() => menuOverlay.classList.add('hidden'), 300);
+        }
+    }
+    
     document.body.style.overflow = '';
 }
 
@@ -586,6 +596,28 @@ function toggleCart() {
         overlay.classList.remove('opacity-0');
         openModalState();
         bar.classList.add('show');
+    }
+}
+
+function toggleMenu() {
+    const sideMenu = document.getElementById('side-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    
+    if (sideMenu.classList.contains('translate-x-full')) {
+        // Open menu
+        menuOverlay.classList.remove('hidden');
+        void menuOverlay.offsetWidth;
+        menuOverlay.classList.remove('opacity-0');
+        sideMenu.classList.remove('translate-x-full');
+        sideMenu.classList.add('translate-x-0');
+        openModalState();
+    } else {
+        // Close menu
+        closeModalState();
+        sideMenu.classList.remove('translate-x-0');
+        sideMenu.classList.add('translate-x-full');
+        menuOverlay.classList.add('opacity-0');
+        setTimeout(() => menuOverlay.classList.add('hidden'), 300);
     }
 }
 
