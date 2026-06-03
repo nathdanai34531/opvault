@@ -133,18 +133,46 @@
                             </tr>
                         </thead>
                         <tbody id="admin-card-list" class="text-sm divide-y divide-gray-100">
-                            <tr>
-                                <td colspan="6" class="p-8 text-center text-gray-500 font-bold animate-pulse">
-                                    <div class="flex flex-col items-center justify-center gap-3">
-                                        <svg class="w-8 h-8 text-gray-400 animate-spin" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                            </path>
-                                        </svg>
-                                        กำลังโหลดข้อมูลการ์ด...
-                                    </div>
-                                </td>
+                            <!-- Skeletons -->
+                            <tr class="bg-gray-50/50">
+                                <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
+                            </tr>
+                            <tr class="bg-gray-50/50">
+                                <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
+                            </tr>
+                            <tr class="bg-gray-50/50">
+                                <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
+                            </tr>
+                            <tr class="bg-gray-50/50">
+                                <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
+                            </tr>
+                            <tr class="bg-gray-50/50">
+                                <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
+                                <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
                             </tr>
                         </tbody>
                     </table>
@@ -167,18 +195,36 @@
                             </tr>
                         </thead>
                         <tbody id="admin-history-list" class="text-sm divide-y divide-gray-100">
-                            <tr>
-                                <td colspan="4" class="p-8 text-center text-gray-500 font-bold animate-pulse">
-                                    <div class="flex flex-col items-center justify-center gap-3">
-                                        <svg class="w-8 h-8 text-gray-400 animate-spin" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                            </path>
-                                        </svg>
-                                        กำลังโหลดประวัติ...
-                                    </div>
-                                </td>
+                            <!-- Skeletons -->
+                            <tr class="bg-gray-50/50">
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-24 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-16 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
+                            </tr>
+                            <tr class="bg-gray-50/50">
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-24 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-16 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
+                            </tr>
+                            <tr class="bg-gray-50/50">
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-24 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-16 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
+                            </tr>
+                            <tr class="bg-gray-50/50">
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-24 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-16 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
+                            </tr>
+                            <tr class="bg-gray-50/50">
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-24 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-16 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
+                                <td class="p-2 md:p-4"><div class="w-20 h-4 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
                             </tr>
                         </tbody>
                     </table>
@@ -194,7 +240,11 @@
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="admin-credit-list">
-                    <!-- Injected by JS -->
+                    <!-- Skeletons -->
+                    <div class="bg-gray-200 rounded-lg shadow-sm aspect-[3/4] relative overflow-hidden"><div class="skeleton-sweep"></div></div>
+                    <div class="bg-gray-200 rounded-lg shadow-sm aspect-[3/4] relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div>
+                    <div class="bg-gray-200 rounded-lg shadow-sm aspect-[3/4] relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div>
+                    <div class="bg-gray-200 rounded-lg shadow-sm aspect-[3/4] relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div>
                 </div>
             </div>
 
