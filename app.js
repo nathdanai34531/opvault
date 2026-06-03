@@ -15,7 +15,21 @@ function initPanzoom() {
         
         // Double tap to zoom in/out
         let lastTap = 0;
+        let isPinching = false;
+        
+        imgElement.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                isPinching = true;
+            }
+        }, {passive: true});
+
         imgElement.addEventListener('touchend', function(e) {
+            if (isPinching) {
+                if (e.touches.length === 0) {
+                    isPinching = false;
+                }
+                return;
+            }
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;
             if (tapLength < 300 && tapLength > 0) {
