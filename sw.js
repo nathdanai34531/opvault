@@ -1,4 +1,4 @@
-const CACHE_NAME = 'opvault-cache-v5';
+const CACHE_NAME = 'opvault-cache-v6';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -34,12 +34,15 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response; // Return from cache
-        }
-        return fetch(event.request); // Fallback to network
+    fetch(event.request)
+      .then(networkResponse => {
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+      })
+      .catch(() => {
+        return caches.match(event.request);
       })
   );
 });
