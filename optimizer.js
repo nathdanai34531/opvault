@@ -7,17 +7,15 @@ function getOptimizedImageUrl(url, width = 300) {
     if (!url) return '';
     if (url.startsWith('data:') || url.startsWith('blob:') || !url.startsWith('http')) return url;
     
-    if (url.includes('asia-en.onepiece-cardgame.com')) {
-        const match = url.match(/\\/card\\/(.+)\\.png/);
-        if (match) {
-            const code = match[1]; 
-            if (!code.includes('_')) {
-                const setPrefix = code.split('-')[0];
-                return \`https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/\${setPrefix}/\${code}_EN.webp\`;
-            }
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname.includes('onepiece-cardgame.com') || urlObj.hostname.includes('limitlesstcg')) {
+            return \`https://cdn.statically.io/img/\${urlObj.hostname}\${urlObj.pathname}?w=\${width}&q=80\`;
         }
-    }
-    return \`https://proxy.duckduckgo.com/iu/?u=\${encodeURIComponent(url)}\`;
+    } catch(e) {}
+    
+    const cleanUrl = url.replace(/^https?:\\/\\//, '');
+    return \`https://i2.wp.com/\${cleanUrl}?w=\${width}&quality=80&strip=all\`;
 }
 `;
     if (!content.includes('getOptimizedImageUrl')) {

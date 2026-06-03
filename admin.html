@@ -107,28 +107,34 @@
                             class="shrink-0 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-700 transition"
                             title="โหลดออเดอร์จากรหัสตะกร้า">โหลด</button>
                     </div>
-                    <div class="flex gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                    <div class="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                        <button id="bulk-delete-btn" onclick="bulkDeleteCards()"
+                            class="hidden col-span-2 sm:col-span-1 shrink-0 bg-red-600 text-white px-3 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-red-700 transition items-center justify-center gap-1.5">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            ลบ (<span id="bulk-delete-count">0</span>)
+                        </button>
                         <button id="bulk-sell-btn" onclick="openOrderSummaryModal()"
-                            class="hidden w-full sm:w-auto bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-green-700 transition">สรุปยอด
+                            class="hidden col-span-2 sm:col-span-1 w-full sm:w-auto bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-green-700 transition">สรุปยอด
                             (<span id="bulk-count">0</span>)</button>
+                        <button onclick="backupData()" class="bg-gray-200 text-gray-700 px-3 py-2.5 rounded-lg text-xs font-bold shadow-sm hover:bg-gray-300 transition" title="ส่งออกข้อมูลการ์ดทั้งหมด">Backup</button>
+                        <button onclick="document.getElementById('restore-file').click()" class="bg-gray-200 text-gray-700 px-3 py-2.5 rounded-lg text-xs font-bold shadow-sm hover:bg-gray-300 transition" title="นำเข้าข้อมูลการ์ด">Restore</button>
+                        <input type="file" id="restore-file" accept=".json" class="hidden" onchange="restoreData(event)">
                         <button onclick="openAddModal()"
-                            class="w-full sm:w-auto bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-800 transition">+
+                            class="col-span-2 sm:col-span-1 w-full sm:w-auto bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-800 transition">+
                             เพิ่มการ์ด</button>
                     </div>
                 </div>
 
                 <div
-                    class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-140px)]">
-                    <table class="w-full text-left border-collapse min-w-[700px]">
-                        <thead class="sticky top-0 z-10 shadow-[0_1px_0_0_#e5e7eb]">
-                            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-140px)] relative">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 z-40 bg-gray-50 shadow-[0_1px_0_0_#e5e7eb]">
+                            <tr class="text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 md:p-4 w-10 text-center"><input type="checkbox" id="select-all-cards"
                                         class="rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer"
                                         onchange="toggleSelectAllCards()"></th>
                                 <th class="p-3 md:p-4 font-semibold w-16">รูปภาพ</th>
-                                <th class="p-3 md:p-4 font-semibold min-w-[150px]">ชื่อการ์ด / เซ็ต</th>
-                                <th class="p-3 md:p-4 font-semibold w-28">ราคา</th>
-                                <th class="p-3 md:p-4 font-semibold w-32">คุณสมบัติ</th>
+                                <th class="p-3 md:p-4 font-semibold min-w-[150px]">ชื่อการ์ด / รหัสการ์ด</th>
                                 <th class="p-3 md:p-4 font-semibold text-right w-24">จัดการ</th>
                             </tr>
                         </thead>
@@ -138,7 +144,6 @@
                                 <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
-                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
                             </tr>
@@ -146,7 +151,6 @@
                                 <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
-                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
                             </tr>
@@ -154,7 +158,6 @@
                                 <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
-                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
                             </tr>
@@ -162,7 +165,6 @@
                                 <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
-                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
                             </tr>
@@ -170,7 +172,6 @@
                                 <td class="p-3 md:p-4 text-center"><div class="w-4 h-4 bg-gray-200 rounded mx-auto overflow-hidden relative"><div class="skeleton-sweep"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-10 h-14 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.1s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-32 h-4 bg-gray-200 rounded relative overflow-hidden mb-2"><div class="skeleton-sweep" style="animation-delay: 0.2s"></div></div><div class="w-20 h-3 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.3s"></div></div></td>
-                                <td class="p-3 md:p-4"><div class="w-16 h-4 bg-gray-200 rounded relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.4s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-20 h-5 bg-gray-200 rounded-full relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.5s"></div></div></td>
                                 <td class="p-3 md:p-4"><div class="w-16 h-6 bg-gray-200 rounded ml-auto relative overflow-hidden"><div class="skeleton-sweep" style="animation-delay: 0.6s"></div></div></td>
                             </tr>
@@ -267,25 +268,6 @@
                 <form id="card-form" class="space-y-4">
                     <input type="hidden" id="card-id">
 
-                    <div
-                        class="bg-blue-50/50 p-3 rounded-lg border border-blue-100 flex flex-col gap-2 relative overflow-hidden">
-                        <div
-                            class="absolute top-0 right-0 bg-blue-600 text-white text-[8px] font-bold px-2 py-0.5 rounded-bl-lg">
-                            ✨ AUTO-FETCH</div>
-                        <label class="block text-xs font-bold text-blue-800">รหัสการ์ด (ดึงข้อมูลอัตโนมัติ)</label>
-                        <div class="flex gap-2 items-stretch">
-                            <input type="text" id="card-fetch-code" placeholder="เช่น OP05-022"
-                                class="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none uppercase bg-white font-mono placeholder:font-sans">
-                            <button type="button" onclick="fetchCardData()"
-                                class="shrink-0 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-blue-700 transition flex gap-1.5 items-center">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                                ดึงข้อมูล
-                            </button>
-                        </div>
-                    </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">ชื่อการ์ด</label>
@@ -347,8 +329,8 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">เซ็ต (Set / รหัส)</label>
-                        <input type="text" id="card-set" placeholder="ex. OP-05 · SEC AA"
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">รหัสการ์ด (Card Code)</label>
+                        <input type="text" id="card-set" placeholder="ex. OP05-001"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
                     </div>
                     <div>

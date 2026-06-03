@@ -14,41 +14,7 @@ const userCodes = [
 ];
 let selectedCodes = [...userCodes].sort(() => 0.5 - Math.random()).slice(0, Math.floor(userCodes.length * 0.8));
 
-const defaultCards = Array.from({length: 42}, (_, i) => {
-    const d = new Date(Date.now() - Math.floor(Math.random() * 10000000000));
-    const yy = String(d.getFullYear()).slice(-2);
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    const ss = String(d.getSeconds()).padStart(2, '0');
-    const rarity = rarities[Math.floor(Math.random() * rarities.length)];
-    const set = sets[Math.floor(Math.random() * sets.length)];
-    
-    let cardCode = `${set}-${String(Math.floor(Math.random()*120)).padStart(3, '0')}`;
-    if (i < selectedCodes.length) {
-        cardCode = selectedCodes[i];
-    }
-
-    return {
-        id: Date.now() + i,
-        code: `${yy}${mm}${dd}-${hh}${min}${ss}`,
-        cardCode: cardCode,
-        name: `${names[Math.floor(Math.random() * names.length)]} ${rarity}`,
-        price: Math.floor(Math.random() * 800) * 100 + 200, 
-        image: imagePool[Math.floor(Math.random() * imagePool.length)],
-        rarity: rarity,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        badge: badges[Math.floor(Math.random() * badges.length)],
-        set: `${set} · ${rarity}`
-    };
-});
-
-// Force regenerate to apply new codes
-if (!localStorage.getItem('opvault_placeholder_generated_v8')) {
-    localStorage.setItem('opvault_cards', JSON.stringify(defaultCards));
-    localStorage.setItem('opvault_placeholder_generated_v8', 'true');
-}
+// Removed defaultCards generation to prevent fake data on new devices
 
 let cards = [];
 let currentCredits = [];
@@ -56,32 +22,6 @@ let currentCredits = [];
 // Initialize Firebase Listeners and Migrate Local Data
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Migration logic for existing localStorage data
-        try {
-            if (!localStorage.getItem('migrated_to_firestore_v1')) {
-                const localCards = JSON.parse(localStorage.getItem('opvault_cards')) || [];
-                if (localCards.length > 0) {
-                    console.log("Migrating cards to Firestore...");
-                    for (const c of localCards) {
-                        await db.collection("cards").doc(c.id.toString()).set(c);
-                    }
-                }
-                
-                const localCredits = JSON.parse(localStorage.getItem('opvault_credits')) || [];
-                if (localCredits.length > 0) {
-                    console.log("Migrating credits to Firestore...");
-                    for (const c of localCredits) {
-                        await db.collection("credits").doc(c.id.toString()).set(c);
-                    }
-                }
-                
-                localStorage.setItem('migrated_to_firestore_v1', 'true');
-                console.log("Migration complete!");
-            }
-        } catch (migrationError) {
-            console.warn("Migration failed, continuing to load app:", migrationError);
-        }
-
         // Real-time listener for Cards
         db.collection("cards").onSnapshot((snapshot) => {
             cards = [];
@@ -112,6 +52,39 @@ document.addEventListener('DOMContentLoaded', async () => {
                 renderCredits();
             }
         });
+
+        // Run cleanup in background
+        (async () => {
+            try {
+                if (!localStorage.getItem('cleaned_samples_v1')) {
+                    console.log("Cleaning up sample cards...");
+                    const snapshot = await db.collection("cards").get();
+                    let sampleCount = 0;
+                    
+                    const batch = db.batch();
+                    let batchCount = 0;
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.image && data.image.startsWith('images/card')) {
+                            sampleCount++;
+                            if (sampleCount > 5) {
+                                batch.delete(doc.ref);
+                                batchCount++;
+                            }
+                        }
+                    });
+                    
+                    if (batchCount > 0) {
+                        await batch.commit();
+                    }
+                    localStorage.setItem('cleaned_samples_v1', 'true');
+                    console.log("Cleaned up " + batchCount + " sample cards!");
+                }
+            } catch (e) {
+                console.warn("Sample cleanup failed:", e);
+            }
+        })();
         
     } catch (e) {
         console.error("Firebase Initialization Error:", e);
@@ -126,17 +99,17 @@ function getOptimizedImageUrl(url, width = 300) {
     if (!url) return '';
     if (url.startsWith('data:') || url.startsWith('blob:') || !url.startsWith('http')) return url;
     
-    if (url.includes('asia-en.onepiece-cardgame.com')) {
-        const match = url.match(/\/card\/(.+)\.png/);
-        if (match) {
-            const code = match[1]; 
-            if (!code.includes('_')) {
-                const setPrefix = code.split('-')[0];
-                return `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/${setPrefix}/${code}_EN.webp`;
-            }
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname.includes('onepiece-cardgame.com') || urlObj.hostname.includes('limitlesstcg')) {
+            // Statically format: https://cdn.statically.io/img/domain.com/path
+            return `https://cdn.statically.io/img/${urlObj.hostname}${urlObj.pathname}?w=${width}&q=80`;
         }
-    }
-    return `https://proxy.duckduckgo.com/iu/?u=${encodeURIComponent(url)}`;
+    } catch(e) {}
+    
+    // Fallback to Jetpack Photon which is also extremely fast
+    const cleanUrl = url.replace(/^https?:\/\//, '');
+    return `https://i2.wp.com/${cleanUrl}?w=${width}&quality=80&strip=all`;
 }
 
 function formatPrice(num) {
@@ -176,11 +149,29 @@ function renderCards() {
     let cardsHtml = '';
     filtered.forEach(card => {
         let badgeHtml = card.badge ? `<span class="absolute top-1.5 left-1.5 z-10 bg-gray-900/90 backdrop-blur-sm text-white font-bold text-[7px] px-1.5 py-0.5 rounded-sm">${card.badge}</span>` : '';
-        let codeHtml = card.code ? `<span class="absolute top-4 right-1.5 z-10 text-white/90 font-extrabold text-[7px] tracking-wide whitespace-nowrap text-right" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8), 0px 0px 4px rgba(0,0,0,1);">${card.code}</span>` : '';
+        let codeHtml = card.code ? `<span class="absolute top-4 right-1.5 z-20 text-white font-black text-[7.5px] tracking-widest" style="text-shadow: 0.5px 0.5px 0 #000, -0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0 1px 2px rgba(0,0,0,0.8);">#${card.code}</span>` : '';
         
         const inCart = cart.some(i => i.id === card.id);
         const btnClass = inCart ? "bg-yellow-400 text-gray-900 w-[46px] justify-center" : "bg-blue-600 text-white hover:bg-blue-700 px-2 gap-1";
         const btnContent = inCart ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>` : `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> เพิ่ม`;
+
+        let setDisplay = card.cardCode || card.set || '';
+        if (setDisplay && !setDisplay.includes(' · ') && card.rarity) {
+            setDisplay = `${setDisplay} · ${card.rarity}`;
+        } else if (!setDisplay) {
+            setDisplay = card.rarity || '';
+        }
+
+        let colorMap = {
+            'red': 'bg-red-500',
+            'blue': 'bg-blue-500',
+            'green': 'bg-green-500',
+            'purple': 'bg-purple-500',
+            'black': 'bg-gray-800',
+            'yellow': 'bg-yellow-400',
+            'multi': 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500'
+        };
+        let colorDot = card.color ? `<div class="w-2 h-2 rounded-full ${colorMap[card.color] || 'bg-gray-400'} shadow-[0_0_2px_rgba(255,255,255,0.5)] border border-white/30 shrink-0"></div>` : '';
 
         let html = `
             <div class="card-item bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex flex-col relative transition-transform hover:-translate-y-1">
@@ -189,16 +180,19 @@ function renderCards() {
                 <div class="relative w-full aspect-[3/4] bg-gray-200 cursor-pointer group overflow-hidden" onclick="openLightbox(${card.id})">
                     <div class="skeleton-sweep absolute inset-0 z-0"></div>
                     <img src="${getOptimizedImageUrl(card.image)}" class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 relative z-10 opacity-0" onload="this.classList.remove('opacity-0');" loading="lazy">
-                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
+                    <div class="absolute inset-0 z-20 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
                         <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent flex flex-col justify-end p-2 text-left pointer-events-none">
-                        <span class="text-[9px] uppercase font-black tracking-wide text-yellow-400 mb-0.5 drop-shadow-md">${card.cardCode || card.set || card.rarity}</span>
-                        <h3 class="text-[11px] font-bold text-white leading-tight line-clamp-2 drop-shadow-md">${card.name}</h3>
+                    <div class="absolute inset-0 z-20 bg-gradient-to-t from-black/95 via-black/30 to-transparent flex flex-col justify-end p-2 text-left pointer-events-none">
+                        <h3 class="text-[13px] font-extrabold text-white leading-tight line-clamp-2 drop-shadow-md mb-0.5">${card.name}</h3>
+                        <div class="flex items-center gap-1.5">
+                            ${colorDot}
+                            <span class="text-[9px] uppercase font-black tracking-wide text-yellow-400 drop-shadow-md">${setDisplay}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="px-2 h-[38px] flex items-center bg-white justify-between">
-                    <span class="text-[11px] font-extrabold text-gray-900">${formatPrice(card.price)}</span>
+                    <span class="text-[12px] font-extrabold text-green-700">${formatPrice(card.price)}</span>
                     <button id="add-btn-${card.id}" onclick="addToCart(${card.id}); event.stopPropagation();" class="${btnClass} text-[9px] font-bold h-[26px] rounded shadow-sm transition tap-effect shrink-0 flex items-center">
                         ${btnContent}
                     </button>

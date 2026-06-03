@@ -8,18 +8,6 @@ let credits = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Run migration just in case admin opens first
-        if (!localStorage.getItem('migrated_to_firestore_admin')) {
-            const localHistory = JSON.parse(localStorage.getItem('opvault_history')) || [];
-            if (localHistory.length > 0) {
-                console.log("Migrating history...");
-                for (const h of localHistory) {
-                    await db.collection("history").doc(h.id.toString()).set(h);
-                }
-            }
-            localStorage.setItem('migrated_to_firestore_admin', 'true');
-        }
-
         db.collection("cards").onSnapshot(snap => {
             cards = [];
             snap.forEach(doc => cards.push({ ...doc.data(), id: parseInt(doc.id) }));
@@ -39,6 +27,76 @@ document.addEventListener('DOMContentLoaded', async () => {
             snap.forEach(doc => credits.push({ ...doc.data(), id: parseInt(doc.id) }));
             renderAdminCredits();
         });
+
+        // Run migration in background
+        (async () => {
+            try {
+                if (!localStorage.getItem('migrated_to_firestore_admin')) {
+                    const localHistory = JSON.parse(localStorage.getItem('opvault_history')) || [];
+                    if (localHistory.length > 0) {
+                        console.log("Migrating history...");
+                        for (const h of localHistory) {
+                            await db.collection("history").doc(h.id.toString()).set(h);
+                        }
+                    }
+                    localStorage.setItem('migrated_to_firestore_admin', 'true');
+                }
+                
+                try {
+                    if (!localStorage.getItem('cleaned_samples_v2')) {
+                        console.log("Cleaning up sample cards from Admin...");
+                        const snapshot = await db.collection("cards").get();
+                        let sampleCount = 0;
+                        const batch = db.batch();
+                        let batchCount = 0;
+                        
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            if (data.image && data.image.startsWith('images/card')) {
+                                sampleCount++;
+                                if (sampleCount > 5) {
+                                    batch.delete(doc.ref);
+                                    batchCount++;
+                                }
+                            }
+                        });
+                        
+                        if (batchCount > 0) {
+                            await batch.commit();
+                        }
+                        localStorage.setItem('cleaned_samples_v2', 'true');
+                        console.log("Cleaned up " + batchCount + " sample cards!");
+                    }
+                } catch (e) {
+                    console.warn("Sample cleanup failed:", e);
+                }
+
+                try {
+                    if (!localStorage.getItem('migrated_codes_to_8_chars')) {
+                        console.log("Updating old card codes...");
+                        const snapshot = await db.collection("cards").get();
+                        const batch = db.batch();
+                        let updated = 0;
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            if (data.code && data.code.length > 8) {
+                                batch.update(doc.ref, { code: generateCode(data.id) });
+                                updated++;
+                            }
+                        });
+                        if (updated > 0) {
+                            await batch.commit();
+                        }
+                        localStorage.setItem('migrated_codes_to_8_chars', 'true');
+                        console.log("Updated codes for " + updated + " cards!");
+                    }
+                } catch (e) {
+                    console.warn("Code migration failed:", e);
+                }
+            } catch (e) {
+                console.warn(e);
+            }
+        })();
     } catch(e) {
         console.error("Admin Firebase Init Error", e);
     }
@@ -51,17 +109,15 @@ function getOptimizedImageUrl(url, width = 300) {
     if (!url) return '';
     if (url.startsWith('data:') || url.startsWith('blob:') || !url.startsWith('http')) return url;
     
-    if (url.includes('asia-en.onepiece-cardgame.com')) {
-        const match = url.match(/\/card\/(.+)\.png/);
-        if (match) {
-            const code = match[1]; 
-            if (!code.includes('_')) {
-                const setPrefix = code.split('-')[0];
-                return `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/${setPrefix}/${code}_EN.webp`;
-            }
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname.includes('onepiece-cardgame.com') || urlObj.hostname.includes('limitlesstcg')) {
+            return `https://cdn.statically.io/img/${urlObj.hostname}${urlObj.pathname}?w=${width}&q=80`;
         }
-    }
-    return `https://proxy.duckduckgo.com/iu/?u=${encodeURIComponent(url)}`;
+    } catch(e) {}
+    
+    const cleanUrl = url.replace(/^https?:\/\//, '');
+    return `https://i2.wp.com/${cleanUrl}?w=${width}&quality=80&strip=all`;
 }
 
 function updateDashboard() {
@@ -100,14 +156,13 @@ function formatPrice(num) {
 }
 
 function generateCode(timestamp) {
-    const d = new Date(timestamp);
-    const yy = String(d.getFullYear()).slice(-2);
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    const ss = String(d.getSeconds()).padStart(2, '0');
-    return `${yy}${mm}${dd}-${hh}${min}${ss}`;
+    // 8-character random alphanumeric code (excluding confusing characters like O, 0, I, 1)
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }
 
 // onSnapshot takes care of real-time syncing so we don't need to manually update local storage here
@@ -207,11 +262,40 @@ function toggleCardSelection(id) {
 function updateBulkSellBtn() {
     const btn = document.getElementById('bulk-sell-btn');
     const count = document.getElementById('bulk-count');
+    const delBtn = document.getElementById('bulk-delete-btn');
+    const delCount = document.getElementById('bulk-delete-count');
+    
     if (selectedCards.size > 0) {
         btn.classList.remove('hidden');
+        if(delBtn) delBtn.classList.remove('hidden');
         count.textContent = selectedCards.size;
+        if(delCount) delCount.textContent = selectedCards.size;
     } else {
         btn.classList.add('hidden');
+        if(delBtn) delBtn.classList.add('hidden');
+    }
+}
+
+async function bulkDeleteCards() {
+    if (selectedCards.size === 0) return;
+    
+    if (confirm(`คุณต้องการลบการ์ดที่เลือกทั้งหมด ${selectedCards.size} ใบใช่หรือไม่?\n(การลบจะไม่สามารถกู้คืนได้)`)) {
+        try {
+            const batch = db.batch();
+            selectedCards.forEach(id => {
+                const ref = db.collection('cards').doc(id.toString());
+                batch.delete(ref);
+            });
+            await batch.commit();
+            
+            selectedCards.clear();
+            document.getElementById('select-all-cards').checked = false;
+            updateBulkSellBtn();
+            alert("ลบการ์ดที่เลือกสำเร็จแล้ว!");
+        } catch(e) {
+            console.error("Bulk Delete Error", e);
+            alert("เกิดข้อผิดพลาดในการลบการ์ด กรุณาลองใหม่อีกครั้ง");
+        }
     }
 }
 
@@ -233,46 +317,60 @@ function renderAdminCards() {
     
     let cardsHtml = '';
     filteredCards.forEach(card => {
-        let colorText = 'text-gray-800';
-        let colorBg = 'bg-gray-200';
-        let colorBorder = 'border-gray-300';
-        if(card.color !== 'yellow' && card.color !== 'white') {
-            colorText = `text-${card.color}-700`;
-            colorBg = `bg-${card.color}-100`;
-            colorBorder = `border-${card.color}-200`;
-        }
+        let colorMap = {
+            'red': 'bg-red-500',
+            'blue': 'bg-blue-500',
+            'green': 'bg-green-500',
+            'purple': 'bg-purple-500',
+            'black': 'bg-gray-800',
+            'yellow': 'bg-yellow-400',
+            'multi': 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500'
+        };
+        let colorDot = card.color ? `<div class="w-2.5 h-2.5 rounded-full ${colorMap[card.color] || 'bg-gray-400'} shadow-[0_0_2px_rgba(0,0,0,0.2)] border border-white shrink-0"></div>` : '';
 
         const isChecked = selectedCards.has(card.id.toString()) ? 'checked' : '';
 
+        let setDisplay = `<span class="text-blue-600">${card.set || '-'}</span>`;
+        if (card.set && card.set.includes(' · ')) {
+            const parts = card.set.split(' · ');
+            setDisplay = `<span class="text-blue-600">${parts[0]}</span> <span class="text-gray-500 font-medium">· ${parts.slice(1).join(' · ')}</span>`;
+        } else if (card.rarity) {
+            setDisplay = `<span class="text-blue-600">${card.set || '-'}</span> <span class="text-gray-500 font-medium">· ${card.rarity}</span>`;
+        }
+
         cardsHtml += `
             <tr class="hover:bg-gray-50 transition ${isChecked ? 'bg-blue-50/30' : ''}">
-                <td class="p-3 md:p-4 text-center">
-                    <input type="checkbox" value="${card.id}" class="card-checkbox rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer" onchange="toggleCardSelection(${card.id})" ${isChecked}>
+                <td class="p-2 md:p-3 text-center align-middle w-10">
+                    <input type="checkbox" value="${card.id}" class="card-checkbox rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer w-4 h-4" onchange="toggleCardSelection(${card.id})" ${isChecked}>
                 </td>
-                <td class="p-3 md:p-4" onclick="toggleCardSelection(${card.id}); document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked = !document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked;">
-                    <div class="relative w-12 h-16 rounded shadow-sm border border-gray-200 cursor-pointer overflow-hidden bg-gray-200 inline-block align-middle">
+                <td class="p-2 md:p-3 align-middle" onclick="toggleCardSelection(${card.id}); document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked = !document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked;">
+                    <div class="relative w-14 h-20 rounded-md shadow-sm border border-gray-200 cursor-pointer overflow-hidden bg-gray-200 inline-block align-middle">
                         <div class="skeleton-sweep absolute inset-0 z-0"></div>
                         <img src="${getOptimizedImageUrl(card.image, 100)}" class="w-full h-full object-cover relative z-10 opacity-0 transition-opacity duration-300" onload="this.classList.remove('opacity-0');" loading="lazy">
                     </div>
                 </td>
-                <td class="p-3 md:p-4" onclick="toggleCardSelection(${card.id}); document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked = !document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked;">
-                    <div class="font-bold text-gray-800 text-sm cursor-pointer">${card.name}</div>
-                    <div class="text-xs text-gray-500 mt-1 cursor-pointer">
-                        <span class="text-blue-600 font-semibold mr-1">${card.code || '-'}</span> 
-                        ${card.set || '-'} 
-                        ${card.badge ? `<span class="bg-gray-800 text-white px-1.5 py-0.5 rounded ml-1 text-[9px]">${card.badge}</span>` : ''}
+                <td class="p-2 md:p-3 align-middle" onclick="toggleCardSelection(${card.id}); document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked = !document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked;">
+                    <div class="font-black text-gray-900 text-base cursor-pointer leading-tight mb-0 line-clamp-1">${card.name}</div>
+                    <div class="cursor-pointer flex flex-col gap-1.5">
+                        <div class="font-bold text-[12px] tracking-wide uppercase flex items-center gap-1.5">
+                            ${colorDot}
+                            ${setDisplay}
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 mt-0.5">
+                            <span class="text-green-700 bg-green-50 px-2 py-0.5 rounded-md border border-green-200 font-extrabold text-sm shadow-sm">${formatPrice(card.price)}</span>
+                            <span class="text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded text-[11px] font-semibold border border-gray-100 flex items-center gap-1">
+                                <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
+                                ${card.code || '-'}
+                            </span>
+                            ${card.badge ? `<span class="bg-gray-800 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">${card.badge}</span>` : ''}
+                        </div>
                     </div>
                 </td>
-                <td class="p-3 md:p-4 font-semibold text-gray-800">${formatPrice(card.price)}</td>
-                <td class="p-3 md:p-4">
-                    <div class="flex gap-1 flex-wrap">
-                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold border border-gray-200">${card.rarity}</span>
-                        <span class="${colorBg} ${colorText} px-2 py-0.5 rounded text-[10px] font-bold border ${colorBorder}">${card.color.toUpperCase()}</span>
+                <td class="p-2 md:p-3 text-right align-middle w-24">
+                    <div class="flex flex-col gap-3 items-end justify-center pr-1">
+                        <button onclick="editCard(${card.id})" class="text-blue-800 bg-blue-100 hover:bg-blue-200 border border-blue-200 px-4 py-1.5 rounded-full transition-colors font-black text-[13px] shadow-sm w-[70px] text-center">แก้ไข</button>
+                        <button onclick="deleteCard(${card.id})" class="text-red-500 hover:text-red-700 transition-colors font-bold text-[12px] underline decoration-red-200 hover:decoration-red-700 w-[70px] text-center">ลบทิ้ง</button>
                     </div>
-                </td>
-                <td class="p-3 md:p-4 text-right">
-                    <button onclick="editCard(${card.id})" class="text-blue-600 hover:text-blue-800 text-sm font-semibold mr-3">แก้ไข</button>
-                    <button onclick="deleteCard(${card.id})" class="text-red-600 hover:text-red-800 text-sm font-semibold">ลบ</button>
                 </td>
             </tr>
         `;
@@ -412,95 +510,7 @@ function saveCard() {
     closeAddModal();
 }
 
-let globalCardCache = null;
 
-async function fetchCardData() {
-    const codeInput = document.getElementById('card-fetch-code');
-    const code = codeInput.value.trim().toUpperCase();
-    if (!code) {
-        alert("กรุณากรอกรหัสการ์ดที่ต้องการค้นหา (เช่น OP05-022)");
-        return;
-    }
-    
-    const btn = codeInput.nextElementSibling;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> กำลังดึง...`;
-    btn.disabled = true;
-
-    try {
-        if (!globalCardCache) {
-            // Fetch from a public, community-maintained One Piece TCG dataset
-            const response = await fetch('https://raw.githubusercontent.com/buhbbl/punk-records/main/english/index/cards_by_id.json');
-            if (!response.ok) throw new Error("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
-            globalCardCache = await response.json();
-        }
-        
-        // Find card by ID (ignoring alternative art suffix if they just typed the base ID)
-        // Usually, the base code matches the key exactly.
-        let data = globalCardCache[code];
-        
-        if (!data) {
-            // Try matching just the start if they typed a parallel art code, e.g., OP01-120_p1
-            const potentialKey = Object.keys(globalCardCache).find(k => k.startsWith(code));
-            if (potentialKey) {
-                data = globalCardCache[potentialKey];
-            }
-        }
-        
-        if (!data) {
-            alert(`❌ ไม่พบข้อมูลการ์ดรหัส "${code}" ในฐานข้อมูลกลางครับ (อาจจะยังไม่มีในระบบหรือพิมพ์ผิด)`);
-            return;
-        }
-        
-        // Transform the data to match our UI
-        const name = data.name || `การ์ด ${code}`;
-        
-        const rarityMap = {
-            "Common": "C",
-            "Uncommon": "UC",
-            "Rare": "R",
-            "Super Rare": "SR",
-            "Secret Rare": "SEC",
-            "Promotional": "PR",
-            "Promo": "PR",
-            "Leader": "Leader"
-        };
-        const rarity = rarityMap[data.rarity] || data.rarity || 'R';
-        
-        const color = (data.colors && data.colors.length > 0) ? data.colors[0].toLowerCase() : 'blue';
-        
-        // Official image URL pattern
-        const imageUrl = `https://asia-en.onepiece-cardgame.com/images/cardlist/card/${code}.png`;
-
-        // Fill the form
-        document.getElementById('card-name').value = name;
-        document.getElementById('card-set').value = code;
-        
-        const raritySelect = document.getElementById('card-rarity');
-        if([...raritySelect.options].some(o => o.value === rarity)) {
-            raritySelect.value = rarity;
-        }
-        
-        const colorSelect = document.getElementById('card-color');
-        if([...colorSelect.options].some(o => o.value === color)) {
-            colorSelect.value = color;
-        }
-        
-        document.getElementById('card-image').value = imageUrl;
-        document.getElementById('card-image-base64').value = '';
-        
-        // Remove error states if any
-        document.getElementById('card-name').classList.remove('border-red-500');
-        
-        alert(`✅ ดึงข้อมูลการ์ด ${name} สำเร็จ!\n\nกรุณาตรวจสอบรูปภาพ และอย่าลืม "กำหนดราคาขาย" ก่อนบันทึกครับ`);
-        
-    } catch (error) {
-        alert("❌ ไม่สามารถดึงข้อมูลได้: " + error.message);
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-}
 
 function editCard(id) {
     const card = cards.find(c => c.id == id);
@@ -1180,4 +1190,53 @@ function confirmOrder(status) {
     
     // Switch to history tab to show the result
     switchTab('history');
+}
+
+// Data Backup and Restore
+function backupData() {
+    const data = localStorage.getItem('opvault_cards');
+    if (!data || data === '[]') {
+        alert("ไม่มีข้อมูลการ์ดให้ Backup ครับ");
+        return;
+    }
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // Add date to filename
+    const date = new Date();
+    const dateString = date.toISOString().split('T')[0];
+    a.download = `opvault_cards_backup_${dateString}.json`;
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function restoreData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (Array.isArray(data)) {
+                if (confirm(`พบข้อมูลการ์ดจำนวน ${data.length} ใบ\n\nการ Restore จะนำข้อมูลเดิมทั้งหมดออกและแทนที่ด้วยข้อมูลใหม่ในไฟล์นี้ คุณแน่ใจหรือไม่?`)) {
+                    localStorage.setItem('opvault_cards', JSON.stringify(data));
+                    alert("กู้คืนข้อมูลสำเร็จเรียบร้อยครับ!");
+                    window.location.reload();
+                }
+            } else {
+                alert("ไฟล์ข้อมูลไม่ถูกต้อง โปรดใช้ไฟล์ .json ที่ได้จากการ Backup เท่านั้น");
+            }
+        } catch (error) {
+            alert("ไม่สามารถอ่านไฟล์ Backup ได้ครับ");
+        }
+    };
+    reader.readAsText(file);
+    // Reset file input
+    event.target.value = '';
 }
