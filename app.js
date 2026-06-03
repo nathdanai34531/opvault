@@ -621,6 +621,15 @@ function toggleMenu() {
     }
 }
 
+function closeMenuOnly() {
+    const sideMenu = document.getElementById('side-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    sideMenu.classList.remove('translate-x-0');
+    sideMenu.classList.add('translate-x-full');
+    menuOverlay.classList.add('opacity-0');
+    setTimeout(() => menuOverlay.classList.add('hidden'), 300);
+}
+
 function applyWatermark(imageSrc, callback) {
     const img = new Image();
     img.crossOrigin = 'Anonymous';
