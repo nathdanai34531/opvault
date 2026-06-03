@@ -175,8 +175,9 @@ function renderCards() {
             <div class="card-item bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex flex-col relative transition-transform hover:-translate-y-1">
                 ${badgeHtml}
                 ${codeHtml}
-                <div class="relative w-full aspect-[3/4] bg-gray-200 cursor-pointer group" onclick="openLightbox(${card.id})">
-                    <img src="${getOptimizedImageUrl(card.image)}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
+                <div class="relative w-full aspect-[3/4] bg-gray-200 cursor-pointer group overflow-hidden" onclick="openLightbox(${card.id})">
+                    <div class="skeleton-sweep absolute inset-0 z-0"></div>
+                    <img src="${getOptimizedImageUrl(card.image)}" class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 relative z-10 opacity-0" onload="this.classList.remove('opacity-0');" loading="lazy">
                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
                         <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>

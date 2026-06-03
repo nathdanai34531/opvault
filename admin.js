@@ -239,7 +239,10 @@ function renderAdminCards() {
                     <input type="checkbox" value="${card.id}" class="card-checkbox rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer" onchange="toggleCardSelection(${card.id})" ${isChecked}>
                 </td>
                 <td class="p-3 md:p-4" onclick="toggleCardSelection(${card.id}); document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked = !document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked;">
-                    <img src="${getOptimizedImageUrl(card.image, 150)}" class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200 cursor-pointer" loading="lazy">
+                    <div class="relative w-12 h-16 rounded shadow-sm border border-gray-200 cursor-pointer overflow-hidden bg-gray-200 inline-block align-middle">
+                        <div class="skeleton-sweep absolute inset-0 z-0"></div>
+                        <img src="${getOptimizedImageUrl(card.image, 100)}" class="w-full h-full object-cover relative z-10 opacity-0 transition-opacity duration-300" onload="this.classList.remove('opacity-0');" loading="lazy">
+                    </div>
                 </td>
                 <td class="p-3 md:p-4" onclick="toggleCardSelection(${card.id}); document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked = !document.querySelector('.card-checkbox[value=\\'${card.id}\\']').checked;">
                     <div class="font-bold text-gray-800 text-sm cursor-pointer">${card.name}</div>
@@ -1010,7 +1013,10 @@ function openOrderSummaryModal() {
             orderHtml += `
                 <div class="p-3 flex items-center justify-between gap-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
                     <div class="flex items-center gap-3 overflow-hidden flex-1">
-                        <img src="${getOptimizedImageUrl(card.image, 150)}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200 shrink-0" loading="lazy">
+                        <div class="relative w-10 h-14 rounded shadow-sm border border-gray-200 shrink-0 overflow-hidden bg-gray-200">
+                            <div class="skeleton-sweep absolute inset-0 z-0"></div>
+                            <img src="${getOptimizedImageUrl(card.image, 150)}" class="w-full h-full object-cover relative z-10 opacity-0 transition-opacity duration-300" onload="this.classList.remove('opacity-0');" loading="lazy">
+                        </div>
                         <div class="min-w-0">
                             <div class="font-bold text-gray-800 text-sm truncate">${card.name}</div>
                             <div class="text-xs text-gray-500 mt-1 truncate flex items-center gap-1.5">
