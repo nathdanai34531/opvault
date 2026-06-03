@@ -72,8 +72,13 @@
                         <div class="relative w-28 shrink-0">
                             <select id="sortSelect" onchange="updateGallery()" class="w-full bg-gray-50 border border-gray-200 text-[11px] font-semibold px-2 py-2.5 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none text-gray-700">
                                 <option value="default">เรียงลำดับ</option>
+                                <option disabled>──────────</option>
                                 <option value="newest">เพิ่ม: ล่าสุด</option>
                                 <option value="oldest">เพิ่ม: เก่าสุด</option>
+                                <option disabled>──────────</option>
+                                <option value="code-asc">รหัส: น้อย-มาก</option>
+                                <option value="code-desc">รหัส: มาก-น้อย</option>
+                                <option disabled>──────────</option>
                                 <option value="price-asc">ราคา: ต่ำ-สูง</option>
                                 <option value="price-desc">ราคา: สูง-ต่ำ</option>
                             </select>

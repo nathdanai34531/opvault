@@ -140,6 +140,8 @@ function renderCards() {
     if (sortVal === 'oldest') filtered.sort((a,b) => a.id - b.id);
     if (sortVal === 'price-asc') filtered.sort((a,b) => a.price - b.price);
     if (sortVal === 'price-desc') filtered.sort((a,b) => b.price - a.price);
+    if (sortVal === 'code-asc') filtered.sort((a,b) => (a.set || '').localeCompare(b.set || ''));
+    if (sortVal === 'code-desc') filtered.sort((a,b) => (b.set || '').localeCompare(a.set || ''));
 
     if (filtered.length === 0) {
         container.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 text-sm">ไม่พบการ์ดที่ค้นหา</div>`;
