@@ -454,23 +454,27 @@ function updateCartUI() {
     let total = cart.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
     
     if (totalQty > 0) {
-        badge.classList.remove('hidden');
-        badge.textContent = totalQty;
+        if (badge) {
+            badge.classList.remove('hidden');
+            badge.textContent = totalQty;
+        }
         
         // Update mini cart content
-        miniQty.textContent = totalQty;
-        miniTotal.textContent = formatPrice(total);
+        if (miniQty) miniQty.textContent = totalQty;
+        if (miniTotal) miniTotal.textContent = formatPrice(total);
         
         // Show mini cart if checkout bar is not visible
         const bar = document.getElementById('checkout-bar');
-        if (!bar.classList.contains('show')) {
+        if (bar && !bar.classList.contains('show') && miniCart) {
             miniCart.classList.remove('translate-y-32');
             miniCart.classList.add('translate-y-0');
         }
     } else {
-        badge.classList.add('hidden');
-        miniCart.classList.remove('translate-y-0');
-        miniCart.classList.add('translate-y-32');
+        if (badge) badge.classList.add('hidden');
+        if (miniCart) {
+            miniCart.classList.remove('translate-y-0');
+            miniCart.classList.add('translate-y-32');
+        }
     }
 
     const cartContainer = document.getElementById('cart-items');
