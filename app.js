@@ -57,25 +57,29 @@ let currentCredits = [];
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Migration logic for existing localStorage data
-        if (!localStorage.getItem('migrated_to_firestore_v1')) {
-            const localCards = JSON.parse(localStorage.getItem('opvault_cards')) || [];
-            if (localCards.length > 0) {
-                console.log("Migrating cards to Firestore...");
-                for (const c of localCards) {
-                    await db.collection("cards").doc(c.id.toString()).set(c);
+        try {
+            if (!localStorage.getItem('migrated_to_firestore_v1')) {
+                const localCards = JSON.parse(localStorage.getItem('opvault_cards')) || [];
+                if (localCards.length > 0) {
+                    console.log("Migrating cards to Firestore...");
+                    for (const c of localCards) {
+                        await db.collection("cards").doc(c.id.toString()).set(c);
+                    }
                 }
-            }
-            
-            const localCredits = JSON.parse(localStorage.getItem('opvault_credits')) || [];
-            if (localCredits.length > 0) {
-                console.log("Migrating credits to Firestore...");
-                for (const c of localCredits) {
-                    await db.collection("credits").doc(c.id.toString()).set(c);
+                
+                const localCredits = JSON.parse(localStorage.getItem('opvault_credits')) || [];
+                if (localCredits.length > 0) {
+                    console.log("Migrating credits to Firestore...");
+                    for (const c of localCredits) {
+                        await db.collection("credits").doc(c.id.toString()).set(c);
+                    }
                 }
+                
+                localStorage.setItem('migrated_to_firestore_v1', 'true');
+                console.log("Migration complete!");
             }
-            
-            localStorage.setItem('migrated_to_firestore_v1', 'true');
-            console.log("Migration complete!");
+        } catch (migrationError) {
+            console.warn("Migration failed, continuing to load app:", migrationError);
         }
 
         // Real-time listener for Cards
@@ -1118,7 +1122,7 @@ function addBulkToCart() {
 }
 
 // Initial render
-renderCards();
+// Removed to allow skeleton loaders to show until Firebase loads data
 
 // Scroll behavior for hiding/showing filters
 let lastScrollY = window.scrollY;

@@ -754,7 +754,7 @@ window.togglePinCredit = function(id) {
 }
 
 // Init
-renderAdminCards();
+// Removed to allow skeleton loaders to show until Firebase loads data
 updateDashboard();
 // ---------------- Image Editor / Mosaic Logic ----------------
 
