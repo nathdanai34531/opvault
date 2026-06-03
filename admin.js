@@ -49,8 +49,8 @@ let currentSearchTerm = '';
 
 function getOptimizedImageUrl(url, width = 300) {
     if (!url) return '';
-    // Bypass proxy for faster loading times
-    return url;
+    if (url.startsWith('data:') || url.startsWith('blob:') || !url.startsWith('http')) return url;
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=75&maxage=31d`;
 }
 
 function updateDashboard() {

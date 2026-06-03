@@ -5,7 +5,8 @@ function injectHelper(file) {
     const helperFn = `
 function getOptimizedImageUrl(url, width = 300) {
     if (!url) return '';
-    return url;
+    if (url.startsWith('data:') || url.startsWith('blob:') || !url.startsWith('http')) return url;
+    return \`https://wsrv.nl/?url=\${encodeURIComponent(url)}&w=\${width}&output=webp&q=75&maxage=31d\`;
 }
 `;
     if (!content.includes('getOptimizedImageUrl')) {
