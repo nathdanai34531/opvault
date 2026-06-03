@@ -301,6 +301,12 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                     </button>
                     <div id="lightbox-counter" class="absolute top-4 left-4 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded-md hidden z-20">1/1</div>
+                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/60 p-1.5 rounded-full z-30 backdrop-blur-sm">
+                        <button onclick="setLightboxZoom(1, event)" class="w-8 h-8 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/40 transition">1x</button>
+                        <button onclick="setLightboxZoom(3, event)" class="w-8 h-8 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/40 transition">3x</button>
+                        <button onclick="setLightboxZoom(5, event)" class="w-8 h-8 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/40 transition">5x</button>
+                        <button onclick="setLightboxZoom(10, event)" class="w-8 h-8 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/40 transition">10x</button>
+                    </div>
                 </div>
                 <div id="lightbox-details" class="p-4 bg-gray-900 text-white shrink-0 border-t border-gray-800">
                     <!-- details injected here -->

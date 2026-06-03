@@ -4,7 +4,7 @@ function initPanzoom() {
     if (!lightboxPanzoom && window.Panzoom) {
         const imgElement = document.getElementById('lightbox-img');
         lightboxPanzoom = Panzoom(imgElement, {
-            maxScale: 5,
+            maxScale: 10,
             minScale: 1,
             contain: 'outside',
             step: 0.3
@@ -41,6 +41,20 @@ function initPanzoom() {
         });
     } else if (lightboxPanzoom) {
         setTimeout(() => lightboxPanzoom.reset({ animate: false }), 10);
+    }
+}
+
+function setLightboxZoom(level, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    if (lightboxPanzoom) {
+        if (level === 1) {
+            lightboxPanzoom.zoom(1, { animate: true });
+            setTimeout(() => lightboxPanzoom.pan(0, 0), 10);
+        } else {
+            lightboxPanzoom.zoom(level, { animate: true });
+        }
     }
 }
 
