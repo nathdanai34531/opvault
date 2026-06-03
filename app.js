@@ -125,7 +125,8 @@ let selectedColors = new Set(['all']);
 function getOptimizedImageUrl(url, width = 300) {
     if (!url) return '';
     if (url.startsWith('data:') || url.startsWith('blob:') || !url.startsWith('http')) return url;
-    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=75&maxage=31d`;
+    const cleanUrl = url.replace(/^https?:\/\//, '');
+    return `https://i2.wp.com/${cleanUrl}?w=${width}&quality=75&strip=all`;
 }
 
 function formatPrice(num) {
