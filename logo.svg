@@ -2,35 +2,48 @@
     <!-- Background -->
     <rect width="500" height="200" fill="#111827" />
     
-    <g transform="translate(36, 19)">
-        <!-- Letter O (Golden Ratio Outer Diameter = 161.8) -->
-        <circle cx="80.9" cy="80.9" r="80.9" fill="#ffffff" />
+    <g transform="translate(31, 0)">
         
-        <!-- Negative Space Anchor (Fat and Bold) -->
-        <g fill="#111827" stroke="none">
-            <!-- Ring -->
-            <circle cx="80.9" cy="45.5" r="23.6" />
-            <!-- Stem -->
-            <rect x="69.1" y="45.5" width="23.6" height="74.5" />
-            <!-- Crossbar -->
-            <rect x="38.2" y="55" width="85.4" height="23.6" rx="6" />
-            <!-- Hook -->
-            <path d="M 30.9 100 A 50 50 0 0 0 130.9 100 L 104.5 100 A 26.4 26.4 0 0 1 57.3 100 Z" />
-            <!-- Left Fluke -->
-            <polygon points="11.8,100 50,100 30.9,70" />
-            <!-- Right Fluke -->
-            <polygon points="111.8,100 150,100 130.9,70" />
+        <!-- 1. Letter P (Drawn first so V and O can overlap it) -->
+        <g fill="#ffffff">
+            <!-- P Stem -->
+            <rect x="150" y="40" width="40" height="120" />
+            <!-- P Loop Outer -->
+            <path d="M 190 40 L 235 40 C 280 40, 280 115, 235 115 L 190 115 Z" />
         </g>
-        <!-- Ring inner hole -->
-        <circle cx="80.9" cy="45.5" r="10" fill="#ffffff" />
+        <!-- P Inner Hole (Knockout) -->
+        <path d="M 190 68 L 215 68 C 235 68, 235 87, 215 87 L 190 87 Z" fill="#111827" />
 
-        <!-- Letter P (Golden Ratio Proportions) -->
-        <!-- Stem width 38.2, Outer arc radius 50 -->
-        <path d="M 185.4 0 L 235.4 0 A 50 50 0 0 1 235.4 100 L 223.6 100 L 223.6 161.8 L 185.4 161.8 Z" fill="#ffffff" />
-        <!-- P Inner Hole -->
-        <path d="M 223.6 38.2 L 235.4 38.2 A 11.8 11.8 0 0 1 235.4 61.8 L 223.6 61.8 Z" fill="#111827" />
+        <!-- 2. Letter V (Cyan) - Drawn over P to create the perfect angled overlap -->
+        <polygon points="255,40 295,40 335,120 375,40 415,40 355,160 315,160" fill="#38bdf8" />
 
-        <!-- Letter V (Cyan, shifted to touch P exactly at its peak) -->
-        <polygon points="266.3,0 309.0,0 347.2,100 385.4,0 428.1,0 366.3,161.8 328.1,161.8" fill="#06b6d4" />
+        <!-- 3. Letter O Knockout Border - Creates the crescent cutout on P -->
+        <circle cx="90" cy="100" r="70" fill="#111827" />
+
+        <!-- 4. Letter O (White) - Perfectly Round -->
+        <circle cx="90" cy="100" r="62" fill="#ffffff" />
+        
+        <!-- 5. Anchor (Dark) - Negative space inside O -->
+        <g fill="#111827">
+            <!-- Top Ring -->
+            <circle cx="90" cy="53" r="12" />
+            <!-- Top Ring Hole -->
+            <circle cx="90" cy="53" r="5" fill="#ffffff" />
+            <!-- Stem -->
+            <rect x="85" y="55" width="10" height="60" />
+            <!-- Crossbar -->
+            <rect x="65" y="68" width="50" height="9" rx="2" />
+            <!-- Anchor Hook with Sharp Flukes and Pointed Bottom -->
+            <path d="M 45 105 
+                     L 52 87 
+                     L 60 100 
+                     C 60 125, 75 130, 90 135 
+                     C 105 130, 120 125, 120 100 
+                     L 128 87 
+                     L 135 105 
+                     C 135 145, 110 155, 90 160 
+                     C 70 155, 45 145, 45 105 Z" />
+        </g>
+        
     </g>
 </svg>
