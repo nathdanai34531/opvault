@@ -1,11 +1,11 @@
-const CACHE_NAME = 'opvault-cache-v4';
+const CACHE_NAME = 'opvault-cache-v5';
 const urlsToCache = [
   '/',
   '/index.html',
   '/app.js',
   '/admin.html',
   '/manifest.json',
-  '/logo.svg'
+  '/logo.png'
 ];
 
 self.addEventListener('install', event => {
