@@ -1,4 +1,74 @@
 
+let isModalOpen = false;
+
+function openModalState() {
+    if (!isModalOpen) {
+        isModalOpen = true;
+        history.pushState({ modal: true }, "");
+    }
+}
+
+function closeModalState() {
+    if (isModalOpen) {
+        isModalOpen = false;
+        history.back();
+    }
+}
+
+window.addEventListener('popstate', (e) => {
+    if (isModalOpen) {
+        isModalOpen = false;
+        closeAllModals();
+    }
+});
+
+function closeAllModals() {
+    const lb = document.getElementById('lightbox');
+    if (lb && !lb.classList.contains('hidden')) {
+        closeModalState();
+    lb.classList.add('opacity-0');
+        setTimeout(() => {
+            lb.classList.add('hidden');
+            const lbImg = document.getElementById('lightbox-img');
+            if (lbImg) lbImg.src = '';
+        }, 300);
+    }
+    
+    const bar = document.getElementById('checkout-bar');
+    if (bar && bar.classList.contains('show')) {
+        bar.classList.remove('show');
+        const overlay = document.getElementById('overlay');
+        if (overlay) {
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+        }
+        const miniCart = document.getElementById('mini-cart');
+        if (typeof cart !== 'undefined' && cart.length > 0 && miniCart) {
+            miniCart.classList.remove('translate-y-full');
+        }
+    }
+    
+    const contact = document.getElementById('contact-modal');
+    if (contact && !contact.classList.contains('hidden')) {
+        contact.classList.add('hidden');
+        const overlay = document.getElementById('overlay');
+        if (overlay) overlay.classList.add('hidden');
+    }
+    
+    const viewer = document.getElementById('credit-viewer');
+    if (viewer && !viewer.classList.contains('translate-y-full')) {
+        viewer.classList.add('translate-y-full');
+    }
+    
+    const bulkSearch = document.getElementById('bulk-search-modal');
+    if (bulkSearch && !bulkSearch.classList.contains('hidden')) {
+        bulkSearch.classList.add('hidden');
+    }
+    
+    document.body.style.overflow = '';
+}
+
+
 let lightboxPanzoom;
 function initPanzoom() {
     if (!lightboxPanzoom && window.Panzoom) {
@@ -490,6 +560,7 @@ function toggleCart() {
     const miniCart = document.getElementById('mini-cart');
     
     if (bar.classList.contains('show')) {
+        closeModalState();
         // Closing main cart
         bar.classList.remove('show');
         overlay.classList.add('opacity-0');
@@ -511,6 +582,7 @@ function toggleCart() {
         // trigger reflow
         void overlay.offsetWidth;
         overlay.classList.remove('opacity-0');
+        openModalState();
         bar.classList.add('show');
     }
 }
@@ -563,6 +635,7 @@ function applyWatermark(imageSrc, callback) {
 }
 
 function openLightbox(idOrSrc) {
+    openModalState();
     const lb = document.getElementById('lightbox');
     const img = document.getElementById('lightbox-img');
     const details = document.getElementById('lightbox-details');
@@ -656,6 +729,7 @@ function closeLightbox(e) {
         e.preventDefault();
         e.stopPropagation();
     }
+    closeModalState();
     const lb = document.getElementById('lightbox');
     lb.classList.add('opacity-0');
     setTimeout(() => {
@@ -732,6 +806,8 @@ function toggleContact(showSuccess = false) {
     const step2Badge = document.getElementById('contact-step-2-badge');
     
     if (modal.classList.contains('hidden')) {
+        openModalState();
+        openModalState();
         modal.classList.remove('hidden');
         if (showSuccess === true) {
             if (successBanner) successBanner.classList.remove('hidden');
@@ -743,6 +819,7 @@ function toggleContact(showSuccess = false) {
             if (step2Badge) step2Badge.classList.remove('hidden');
         }
     } else {
+        closeModalState();
         modal.classList.add('hidden');
     }
 }
@@ -753,6 +830,7 @@ let currentLightboxIndex = 0;
 // currentCredits is declared at the top of the file
 
 function openLightboxGallery(creditId, startIndex) {
+    openModalState();
     const credit = currentCredits.find(c => c.id == creditId);
     if (!credit) return;
     
@@ -854,10 +932,12 @@ function handleSwipe() {
 function toggleCreditModal() {
     const viewer = document.getElementById('credit-viewer');
     if (viewer.classList.contains('translate-y-full')) {
+        openModalState();
         viewer.classList.remove('translate-y-full');
         renderCredits();
         document.body.style.overflow = 'hidden'; // prevent background scrolling
     } else {
+        closeModalState();
         viewer.classList.add('translate-y-full');
         document.body.style.overflow = '';
     }
@@ -1094,6 +1174,7 @@ function toggleBulkSearch() {
         document.getElementById('bulk-step-2').classList.add('hidden');
         document.getElementById('bulk-search-input').value = '';
     } else {
+        closeModalState();
         modal.classList.add('hidden');
     }
 }
