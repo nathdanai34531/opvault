@@ -155,7 +155,7 @@ function setLightboxZoom(level, event) {
 
 // Data Initialize
 const imagePool = ['images/card1.png', 'images/card2.png', 'images/card3.png', 'images/card4.png', 'images/card5.png', 'images/card6.png', 'images/card7.png', 'images/card8.png', 'images/card9.png'];
-const rarities = ['Manga', 'SEC', 'SR', 'Leader', 'R', 'UC', 'C'];
+const rarities = ['Manga', 'SEC', 'SR', 'L', 'Leader', 'R', 'UC', 'C'];
 const colors = ['red', 'green', 'blue', 'purple', 'black', 'yellow'];
 const sets = ['OP01', 'OP02', 'OP03', 'OP04', 'OP05', 'OP06', 'EB01', 'EB02', 'OP07', 'OP08'];
 const badges = ['', '', '', '', '', '', '', '', '', ''];

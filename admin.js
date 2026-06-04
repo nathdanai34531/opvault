@@ -556,7 +556,7 @@ async function autoFetchCardData() {
         }
         
         if (cardCategory === 'Leader') {
-            document.getElementById('card-rarity').value = 'Leader';
+            document.getElementById('card-rarity').value = 'L';
         } else {
             // Force user to select rarity since LimitlessTCG doesn't provide it clearly
             document.getElementById('card-rarity').value = '';
