@@ -10,7 +10,7 @@ function getOptimizedImageUrl(url, width = 300) {
     try {
         const urlObj = new URL(url);
         if (urlObj.hostname.includes('onepiece-cardgame.com') || urlObj.hostname.includes('limitlesstcg')) {
-            return \`https://cdn.statically.io/img/\${urlObj.hostname}\${urlObj.pathname}?w=\${width}&q=80\`;
+            return \`https://wsrv.nl/?url=\${urlObj.hostname}\${urlObj.pathname}&w=\${width}&output=webp\`;
         }
     } catch(e) {}
     

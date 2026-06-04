@@ -258,8 +258,8 @@ function getOptimizedImageUrl(url, width = 300) {
     try {
         const urlObj = new URL(url);
         if (urlObj.hostname.includes('onepiece-cardgame.com') || urlObj.hostname.includes('limitlesstcg')) {
-            // Statically format: https://cdn.statically.io/img/domain.com/path
-            return `https://cdn.statically.io/img/${urlObj.hostname}${urlObj.pathname}?w=${width}&q=80`;
+            // Use wsrv.nl instead of statically because statically blocks limitless cdn
+            return `https://wsrv.nl/?url=${urlObj.hostname}${urlObj.pathname}&w=${width}&output=webp`;
         }
     } catch(e) {}
     
