@@ -252,7 +252,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 let cart = JSON.parse(localStorage.getItem('opvault_cart')) || [];
 document.addEventListener('DOMContentLoaded', updateCartUI);
 let selectedCategories = new Set(['all']);
-let selectedColors = new Set(['all']);
+async function translateToThai(text) {
+    if (!text) return '';
+    try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=th&dt=t&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
+        if (!res.ok) return text;
+        const data = await res.json();
+        if (data && data[0]) {
+            return data[0].map(item => item[0]).join('');
+        }
+        return text;
+    } catch(e) {
+        console.error('Translation error:', e);
+        return text;
+    }
+}
 
 function getOptimizedImageUrl(url, width = 300) {
     if (!url) return '';
@@ -737,21 +752,54 @@ function formatEffectText(text) {
     // Replace [Keywords] with styled badges
     return text.replace(/\[([^\]]+)\]/g, (match, keyword) => {
         const kw = keyword.trim();
+        const kwLower = kw.toLowerCase();
         
-        if (kw === 'ทริกเกอร์' || kw.toLowerCase() === 'trigger') {
-            // Yellow badge for trigger
-            return `<span class="inline-flex items-center justify-center bg-yellow-400 text-gray-900 font-extrabold text-[10px] px-2 py-0.5 rounded mr-1 shadow-sm border border-yellow-500 uppercase tracking-wide">Trigger</span>`;
-        } else if (kw.startsWith('ดัง!!') || kw.toUpperCase().startsWith('DON!!')) {
-            // Gray/special badge for DON!!
-            return `<span class="inline-flex items-center justify-center bg-gray-700 text-yellow-400 font-black text-[9px] px-1.5 py-0.5 rounded border border-gray-600 mr-1 uppercase tracking-wider">${kw}</span>`;
-        } else {
-            // Orange diamond badge for effect keywords like บล็อกเกอร์, จู่โจมฉับพลัน, ดับเบิ้ลแอทแทค, Blocker, Rush, Double Attack, etc.
-            return `
-                <span class="diamond-badge-outer mr-1.5 my-0.5 align-middle">
-                    <span class="diamond-badge-inner">${kw}</span>
-                </span>
-            `;
+        // 1. Orange Diamond (Hexagon) Badges for specific keywords
+        const isBlocker = kwLower === 'blocker' || kw === 'บล็อกเกอร์' || kw === 'ตัวบล็อก';
+        const isRush = kwLower === 'rush' || kw === 'จู่โจมฉับพลัน' || kw === 'จู่โจม';
+        const isDoubleAttack = kwLower === 'double attack' || kw === 'ดับเบิ้ลแอทแทค';
+        
+        if (isBlocker) {
+            return `<span class="diamond-badge-outer mx-1 align-middle"><span class="diamond-badge-inner">บล็อกเกอร์</span></span>`;
         }
+        if (isRush) {
+            return `<span class="diamond-badge-outer mx-1 align-middle"><span class="diamond-badge-inner">จู่โจมฉับพลัน</span></span>`;
+        }
+        if (isDoubleAttack) {
+            return `<span class="diamond-badge-outer mx-1 align-middle"><span class="diamond-badge-inner">ดับเบิ้ลแอทแทค</span></span>`;
+        }
+        
+        // 2. Black Capsule for DON!! x... / ด้ง!! x...
+        const donMatch = kw.match(/don!!\s*x\s*(\d+)/i) || kw.match(/ด้ง!!\s*x\s*(\d+)/i) || kw.match(/ดัง!!\s*x\s*(\d+)/i) || kw.match(/ดง!!\s*x\s*(\d+)/i);
+        if (donMatch) {
+            const num = donMatch[1];
+            return `<span class="inline-flex items-center justify-center bg-black text-white font-extrabold text-[9px] px-2.5 py-0.5 rounded-full border border-gray-800 mx-1 align-middle">ด้ง!! x${num}</span>`;
+        }
+        
+        // 3. Blue Frame Badge for other keywords (with Thai translations)
+        let translatedKw = kw;
+        const translations = {
+            'on play': 'เมื่อลงสนาม',
+            'when attacking': 'เมื่อโจมตี',
+            'activate: main': 'เปิดใช้งาน: หลัก',
+            'activate: main/battle': 'เปิดใช้งาน: หลัก/ต่อสู้',
+            'main': 'หลัก',
+            'trigger': 'ทริกเกอร์',
+            'once per turn': 'เทิร์นละครั้ง',
+            'opponent\'s turn': 'เทิร์นคู่ต่อสู้',
+            'your turn': 'เทิร์นเรา',
+            'counter': 'เคาน์เตอร์',
+            'start of your turn': 'เริ่มเทิร์นเรา',
+            'end of your turn': 'จบเทิร์นเรา',
+            'end of opponent\'s turn': 'จบเทิร์นคู่ต่อสู้',
+            'on deletion': 'เมื่อถูกทำลาย'
+        };
+        
+        if (translations[kwLower]) {
+            translatedKw = translations[kwLower];
+        }
+        
+        return `<span class="inline-flex items-center justify-center border border-blue-500/80 text-blue-400 font-extrabold text-[9px] px-1.5 py-0.5 rounded mx-1 bg-blue-500/5 align-middle">${translatedKw}</span>`;
     });
 }
 
@@ -837,6 +885,10 @@ async function fetchCardDetails(cardCode) {
             }
         }
         
+        if (effect) {
+            effect = await translateToThai(effect);
+        }
+        
         const details = {
             name,
             category,
@@ -862,6 +914,13 @@ function renderLightboxCard(card) {
     const img = document.getElementById('lightbox-img');
     const details = document.getElementById('lightbox-details');
     const imgContainer = document.getElementById('lightbox-img-container');
+    const slider = document.getElementById('lightbox-img-slider');
+    
+    // Reset slider transform in case of page transition
+    if (slider) {
+        slider.style.transform = '';
+        slider.style.transition = '';
+    }
     
     // Add transitions dynamically
     imgContainer.classList.add('lightbox-transition');
@@ -878,6 +937,7 @@ function renderLightboxCard(card) {
     const overlayName = document.getElementById('lightbox-overlay-name');
     const overlayColorDot = document.getElementById('lightbox-overlay-colordot');
     const overlaySetRarity = document.getElementById('lightbox-overlay-set-rarity');
+    const overlayCode = document.getElementById('lightbox-overlay-code');
 
     if (overlay && overlayName && overlayColorDot && overlaySetRarity) {
         overlayName.textContent = card.name;
@@ -899,6 +959,11 @@ function renderLightboxCard(card) {
             setDisplay += ` · ${card.rarity}`;
         }
         overlaySetRarity.textContent = setDisplay;
+        
+        if (overlayCode) {
+            overlayCode.textContent = card.code || '';
+        }
+        
         overlay.classList.remove('hidden');
     }
     
@@ -909,7 +974,7 @@ function renderLightboxCard(card) {
     const btnIcon = inCart 
         ? `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>` 
         : `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>`;
-    const btnText = inCart ? "อยู่ในตะกร้าแล้ว" : "เพิ่มลงตะกร้าสินค้า";
+    const btnText = inCart ? "อยู่ในตะกร้าแล้ว" : "เพิ่มลงตะกร้า";
 
     const hasDetailsInDb = card.cost !== undefined && card.category !== undefined;
     const cardCode = card.set || '';
@@ -955,22 +1020,16 @@ function renderLightboxCard(card) {
 
         return `
             <div class="flex flex-col gap-3">
-                <!-- Price, SKU & Add button (Optimized space) -->
-                <div class="flex justify-between items-center gap-2">
+                <!-- Price & Add button (Optimized space) -->
+                <div class="flex justify-between items-center gap-4">
                     <div>
                         <span class="text-[9px] text-gray-500 uppercase font-bold block leading-none mb-1">ราคาขาย</span>
                         <span class="text-xl font-black text-white tracking-tight leading-none">${formatPrice(card.price)}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div class="text-right bg-gray-800/60 px-2.5 py-1 rounded-lg border border-gray-700/50">
-                            <span class="text-[8px] font-bold text-gray-400 uppercase block mb-0.5">รหัสสินค้า</span>
-                            <div class="text-[10px] font-extrabold text-gray-200 tracking-wider">${card.code}</div>
-                        </div>
-                        <div class="w-[140px]">
-                            <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass} !my-0 !py-2.5 !text-xs">
-                                ${btnIcon} <span>${btnText}</span>
-                            </button>
-                        </div>
+                    <div class="flex-grow max-w-[200px]">
+                        <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass} !my-0 !py-2.5 !text-xs w-full">
+                            ${btnIcon} <span>${btnText}</span>
+                        </button>
                     </div>
                 </div>
 
@@ -1038,15 +1097,34 @@ function renderLightboxCard(card) {
         `;
     };
 
+    // Helper to check and translate English effect on-the-fly
+    const checkAndTranslateCardEffect = (infoObj) => {
+        if (infoObj && infoObj.effect && /[A-Za-z]/.test(infoObj.effect)) {
+            translateToThai(infoObj.effect).then(translatedText => {
+                if (translatedText && translatedText !== infoObj.effect) {
+                    infoObj.effect = translatedText;
+                    if (cardCode && cardDetailsCache[cardCode]) {
+                        cardDetailsCache[cardCode].effect = translatedText;
+                    }
+                    if (currentLightboxCardIndex !== -1 && currentLightboxCardIds[currentLightboxCardIndex] === card.id) {
+                        details.innerHTML = renderContent(infoObj);
+                    }
+                }
+            });
+        }
+    };
+
     if (hasDetailsInDb) {
         details.innerHTML = renderContent(card);
+        checkAndTranslateCardEffect(card);
     } else {
         const cached = cardDetailsCache[cardCode];
         if (cached) {
             details.innerHTML = renderContent(cached);
+            checkAndTranslateCardEffect(cached);
         } else {
             // Render basic card stats first
-            details.innerHTML = renderContent({
+            const basicInfo = {
                 effect: card.effect || '',
                 category: card.category || '',
                 color: card.color || '',
@@ -1056,7 +1134,9 @@ function renderLightboxCard(card) {
                 counter: card.counter,
                 traits: card.traits,
                 setName: card.setName,
-            });
+            };
+            details.innerHTML = renderContent(basicInfo);
+            checkAndTranslateCardEffect(basicInfo);
             
             fetchCardDetails(cardCode).then(fetchedInfo => {
                 if (currentLightboxCardIndex !== -1 && currentLightboxCardIds[currentLightboxCardIndex] === card.id) {
@@ -1066,6 +1146,7 @@ function renderLightboxCard(card) {
                         setTimeout(() => {
                             detailsContainer.innerHTML = renderContent(fetchedInfo);
                             detailsContainer.classList.remove('lightbox-transition-hidden');
+                            checkAndTranslateCardEffect(fetchedInfo);
                         }, 150);
                     }
                 }
@@ -1077,6 +1158,12 @@ function renderLightboxCard(card) {
 function changeLightboxCard(cardId) {
     const imgContainer = document.getElementById('lightbox-img-container');
     const details = document.getElementById('lightbox-details');
+    const slider = document.getElementById('lightbox-img-slider');
+    
+    if (slider) {
+        slider.style.transform = '';
+        slider.style.transition = '';
+    }
     
     imgContainer.classList.add('lightbox-transition-hidden');
     details.classList.add('lightbox-transition-hidden');
@@ -1370,18 +1457,27 @@ function initLightboxGestures() {
     const lightbox = document.getElementById('lightbox');
     if (!container || !lightbox) return;
     
+    let touchStartedInImage = false;
+    
     container.addEventListener('touchstart', e => {
         if (typeof lightboxPanzoom !== 'undefined' && lightboxPanzoom && lightboxPanzoom.getScale() > 1.05) {
             isDragging = false;
             return;
         }
+        
+        const imgContainer = document.getElementById('lightbox-img-container');
+        touchStartedInImage = imgContainer && imgContainer.contains(e.target);
+        
         dragStartX = e.touches[0].clientX;
         dragStartY = e.touches[0].clientY;
         dragTranslateX = 0;
         dragTranslateY = 0;
         isDragging = true;
         dragDirection = null;
+        
         container.style.transition = 'none';
+        const slider = document.getElementById('lightbox-img-slider');
+        if (slider) slider.style.transition = 'none';
     }, {passive: true});
     
     container.addEventListener('touchmove', e => {
@@ -1403,20 +1499,29 @@ function initLightboxGestures() {
         }
         
         if (dragDirection === 'vertical') {
-            // Drag down to close gesture
-            if (diffY > 0) { // Only drag down
+            // Drag down to close gesture - ONLY if container is scrolled to top!
+            if (diffY > 0 && container.scrollTop === 0) {
                 dragTranslateY = diffY;
                 const scale = Math.max(0.8, 1 - (diffY / 1500));
                 container.style.transform = `translateY(${diffY}px) scale(${scale})`;
                 
                 const bgOpacity = Math.max(0.4, 0.95 - (diffY / 600));
                 lightbox.style.backgroundColor = `rgba(0, 0, 0, ${bgOpacity})`;
+            } else {
+                // If they are scrolling up, or if details section is scrolled down, let native scroll handle it
+                isDragging = false;
             }
         } else if (dragDirection === 'horizontal') {
-            // Swipe left/right for next/prev card
+            // Swipe left/right for next/prev card - ONLY if touch started on the image area!
+            if (!touchStartedInImage) {
+                isDragging = false;
+                return;
+            }
             dragTranslateX = diffX;
-            // Let the card slide slightly during drag for visual response
-            container.style.transform = `translateX(${diffX * 0.4}px)`;
+            const slider = document.getElementById('lightbox-img-slider');
+            if (slider) {
+                slider.style.transform = `translateX(${diffX * 0.4}px)`;
+            }
         }
     }, {passive: true});
     
@@ -1424,10 +1529,11 @@ function initLightboxGestures() {
         if (!isDragging) return;
         isDragging = false;
         
-        container.style.transition = 'transform 0.22s cubic-bezier(0.25, 0.8, 0.25, 1)';
+        const slider = document.getElementById('lightbox-img-slider');
         
         if (dragDirection === 'vertical') {
-            if (dragTranslateY > 120) {
+            container.style.transition = 'transform 0.22s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            if (dragTranslateY > 120 && container.scrollTop === 0) {
                 // Swipe down far enough -> close lightbox
                 container.style.transform = 'translateY(100%) scale(0.85)';
                 lightbox.style.backgroundColor = 'rgba(0, 0, 0, 0)';
@@ -1445,6 +1551,9 @@ function initLightboxGestures() {
                 lightbox.style.backgroundColor = '';
             }
         } else if (dragDirection === 'horizontal') {
+            if (slider) {
+                slider.style.transition = 'transform 0.22s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            }
             const swipeThreshold = 60;
             if (dragTranslateX < -swipeThreshold) {
                 // Swipe left -> next card/image
@@ -1454,12 +1563,15 @@ function initLightboxGestures() {
                 navigateLightbox(-1);
             } else {
                 // Snap back
-                container.style.transform = '';
+                if (slider) slider.style.transform = '';
             }
             
-            // Clean up translate style since navigateLightbox will update card or we snapped back
+            // Clean up style
             setTimeout(() => {
-                if (!isDragging) container.style.transform = '';
+                if (slider) {
+                    slider.style.transform = '';
+                    slider.style.transition = '';
+                }
             }, 220);
         }
         
