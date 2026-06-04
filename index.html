@@ -290,22 +290,15 @@
         <!-- Card Detail Modal -->
         <div id="card-modal" class="fixed inset-0 bg-black/50 z-[95] hidden flex-col items-center justify-end sm:justify-center backdrop-blur-sm transition-opacity opacity-0">
             <div class="absolute inset-0" onclick="closeCardModal()"></div>
-            <div class="bg-gray-100 w-full max-w-md rounded-none sm:rounded-2xl shadow-2xl flex flex-col relative overflow-hidden h-[100dvh] sm:h-[85vh] max-h-screen z-10 sm:mx-auto mt-auto sm:mt-0">
-                <!-- Header -->
-                <div class="bg-white px-4 py-3 flex justify-between items-center shrink-0 border-b border-gray-200 z-20 shadow-sm">
-                    <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
-                        <div class="bg-blue-100 text-blue-600 rounded-md p-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        รายละเอียดการ์ด
-                    </h3>
-                    <button onclick="closeCardModal()" class="text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition tap-effect"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                </div>
-                
+            <div class="bg-gray-900 w-full max-w-md rounded-none sm:rounded-2xl shadow-2xl flex flex-col relative overflow-hidden h-[100dvh] sm:h-[85vh] max-h-screen z-10 sm:mx-auto mt-auto sm:mt-0">
+                <!-- Floating Close Button -->
+                <button onclick="closeCardModal()" class="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-md tap-effect transition-colors shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
                 <!-- Scrollable Content -->
-                <div class="flex-grow overflow-y-auto flex flex-col bg-gray-50 pb-safe">
+                <div class="flex-grow overflow-y-auto flex flex-col bg-gray-900 pb-safe">
                     <!-- Exact Card Layout matching the grid -->
-                    <div class="w-full bg-white relative shadow-sm border-b border-gray-200 flex flex-col">
+                    <div class="w-full bg-[#0b131e] relative shadow-sm border-b border-gray-800 flex flex-col">
                         
                         <!-- Image Container -->
                         <div class="relative w-full bg-gray-200 cursor-pointer group overflow-hidden" onclick="openZoomModal()">
@@ -323,7 +316,7 @@
                             
                             <!-- Gradient and Text Overlay -->
                             <div class="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/95 via-black/50 to-transparent flex flex-col justify-end p-4 text-left pointer-events-none min-h-[120px]">
-                                <h3 id="cm-name" class="text-3xl font-black text-white leading-tight drop-shadow-md mb-2"></h3>
+                                <h3 id="cm-name" class="text-xl font-bold text-white leading-tight drop-shadow-md mb-2"></h3>
                                 <div class="flex items-center gap-2.5">
                                     <div id="cm-colordot"></div>
                                     <span id="cm-set-rarity" class="text-sm uppercase font-black tracking-widest text-yellow-400 drop-shadow-md"></span>
@@ -333,18 +326,18 @@
                         
                         <!-- Price and Add Button Container -->
                         <div class="px-5 py-4 flex items-center justify-between">
-                            <span id="cm-price" class="text-3xl font-black text-green-700"></span>
+                            <span id="cm-price" class="text-3xl font-black text-green-400"></span>
                             <div id="cm-btn-container" class="w-1/2"></div>
                         </div>
                     </div>
                     
                     <!-- Card Effect Section -->
                     <div class="p-5 flex-grow">
-                        <h4 class="font-bold text-gray-800 text-sm mb-3 flex items-center gap-1.5">
-                            <span class="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-[11px] uppercase tracking-widest font-black">Effect</span>
+                        <h4 class="font-bold text-white text-sm mb-3 flex items-center gap-1.5">
+                            <span class="bg-blue-900/50 text-blue-400 px-2 py-0.5 rounded text-[11px] uppercase tracking-widest font-black border border-blue-800/50">Effect</span>
                             ความสามารถ
                         </h4>
-                        <div id="cm-effect" class="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line bg-white p-4 rounded-xl border border-gray-200 min-h-[80px] shadow-sm">
+                        <div id="cm-effect" class="text-[13px] text-gray-300 leading-relaxed whitespace-pre-line bg-gray-800 p-4 rounded-xl border border-gray-700 min-h-[80px] shadow-sm">
                             <!-- Effect inserted here -->
                         </div>
                     </div>
