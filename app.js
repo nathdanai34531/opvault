@@ -260,9 +260,13 @@ function getOptimizedImageUrl(url, width = 300) {
     
     try {
         const urlObj = new URL(url);
+        // If it's already using wsrv.nl proxy, don't double proxy it, just return it as is or modify width
+        if (urlObj.hostname.includes('wsrv.nl')) {
+            return url;
+        }
+        
         if (urlObj.hostname.includes('onepiece-cardgame.com') || urlObj.hostname.includes('limitlesstcg')) {
-            // Use wsrv.nl instead of statically because statically blocks limitless cdn
-            return `https://wsrv.nl/?url=${urlObj.hostname}${urlObj.pathname}&w=${width}&output=webp`;
+            return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp`;
         }
     } catch(e) {}
     
