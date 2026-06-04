@@ -563,6 +563,23 @@ async function autoFetchCardData() {
         }
         
         if(cardColor) {
+            // Extract Effect (Ability)
+            let effectText = '';
+            const sections = doc.querySelectorAll('.card-text-section');
+            sections.forEach(sec => {
+                if (sec.tagName.toLowerCase() === 'div' && 
+                    !sec.querySelector('.card-text-title') && 
+                    !sec.querySelector('[data-tooltip="Type"]') &&
+                    !sec.querySelector('.card-legality-group')) {
+                    
+                    let text = sec.textContent.replace(/\s+/g, ' ').trim();
+                    if (text && text !== 'legal' && text !== 'not legal' && !text.includes('Standard Extra')) {
+                        effectText = text;
+                    }
+                }
+            });
+            document.getElementById('card-effect').value = effectText;
+
             const colorSelect = document.getElementById('card-color');
             const options = Array.from(colorSelect.options).map(o => o.value);
             // check if exact match
@@ -600,6 +617,7 @@ function openAddModal() {
     const status = document.getElementById('fetch-status');
     if(status) status.classList.add('hidden');
     document.getElementById('card-image-base64').value = '';
+    document.getElementById('card-effect').value = '';
     
     // Reset image preview
     const previewContainer = document.getElementById('image-preview-container');
@@ -629,7 +647,8 @@ function saveCard() {
         rarity: document.getElementById('card-rarity').value,
         color: document.getElementById('card-color').value,
         set: document.getElementById('card-set').value,
-        badge: document.getElementById('card-badge').value
+        badge: document.getElementById('card-badge').value,
+        effect: document.getElementById('card-effect').value.trim()
     };
     
     if(!newCard.name || isNaN(newCard.price) || !newCard.image) {
@@ -669,6 +688,7 @@ function editCard(id) {
         document.getElementById('card-color').value = card.color;
         document.getElementById('card-set').value = card.set || '';
         document.getElementById('card-badge').value = card.badge || '';
+        document.getElementById('card-effect').value = card.effect || '';
         
         updateImagePreview();
         

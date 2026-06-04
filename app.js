@@ -749,6 +749,13 @@ function openLightbox(idOrSrc) {
                     </div>
                 </div>
 
+                ${card.effect ? `
+                <div class="bg-white/5 rounded-lg border border-white/10 p-3 mt-1">
+                    <span class="text-[9px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Effect</span>
+                    <p class="text-[11px] text-gray-300 leading-relaxed font-medium">${card.effect}</p>
+                </div>
+                ` : ''}
+
                 <!-- Action Button -->
                 <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass}">
                     ${btnIcon} <span>${btnText}</span>
