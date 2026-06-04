@@ -252,6 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 let cart = JSON.parse(localStorage.getItem('opvault_cart')) || [];
 document.addEventListener('DOMContentLoaded', updateCartUI);
 let selectedCategories = new Set(['all']);
+let selectedColors = new Set(['all']);
 async function translateToThai(text) {
     if (!text) return '';
     try {
