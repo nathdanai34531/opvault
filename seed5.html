@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed 5 Cards</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding: 50px;">
+    <h2>กำลังเพิ่มการ์ด 20 ใบ (จากต้นแบบ 5 ใบ) เข้าฐานข้อมูล...</h2>
+    <div id="status" style="font-size: 20px; font-weight: bold; color: blue;">กำลังโหลด...</div>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8uFC6UUXnO3esLIB1xor51fqy0spi1ZY",
+            authDomain: "opvault-9fc81.firebaseapp.com",
+            projectId: "opvault-9fc81",
+            storageBucket: "opvault-9fc81.firebasestorage.app"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const templates = [
+            { name: 'Boa Hancock', set: 'OP12-014', rarity: 'SR', color: 'red', image: 'images/card1.png', badge: 'Mint 10' },
+            { name: 'Roronoa Zoro', set: 'OP01-025', rarity: 'SR', color: 'green', image: 'images/card2.png', badge: 'PSA 9' },
+            { name: 'Boa Hancock', set: 'OP01-078', rarity: 'SEC', color: 'blue', image: 'images/card3.png', badge: 'Mint 10' },
+            { name: 'Uta', set: 'OP02-120', rarity: 'SEC', color: 'green', image: 'images/card4.png', badge: 'BGS 9.5' },
+            { name: 'Kozuki Hiyori', set: 'OP06-106', rarity: 'SEC', color: 'yellow', image: 'images/card5.png', badge: 'Mint 10' }
+        ];
+
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        function generateCode() {
+            let result = '';
+            for (let i = 0; i < 8; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        async function run() {
+            try {
+                const batch = db.batch();
+                let count = 0;
+                
+                for (let i = 0; i < 20; i++) {
+                    const template = templates[Math.floor(Math.random() * templates.length)];
+                    const id = Date.now() + i;
+                    const price = Math.floor(Math.random() * 50) * 100 + 500;
+                    
+                    const cardData = {
+                        id: id,
+                        code: generateCode(),
+                        name: template.name,
+                        set: template.set,
+                        badge: template.badge,
+                        rarity: template.rarity,
+                        color: template.color,
+                        price: price,
+                        image: template.image
+                    };
+                    
+                    const docRef = db.collection('cards').doc(id.toString());
+                    batch.set(docRef, cardData);
+                    count++;
+                }
+                
+                await batch.commit();
+                document.getElementById('status').innerText = `✅ สำเร็จ! เพิ่มการ์ดใหม่ ${count} ใบเรียบร้อยแล้ว`;
+                document.getElementById('status').style.color = "green";
+            } catch(e) {
+                document.getElementById('status').innerText = "❌ Error: " + e.message;
+                document.getElementById('status').style.color = "red";
+                console.error(e);
+            }
+        }
+        
+        run();
+    </script>
+</body>
+</html>

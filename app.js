@@ -339,7 +339,7 @@ function renderCards() {
             <div class="card-item bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex flex-col relative transition-transform hover:-translate-y-1">
                 ${badgeHtml}
                 ${codeHtml}
-                <div class="relative w-full aspect-[3/4] bg-gray-200 cursor-pointer group overflow-hidden" onclick="openLightbox(${card.id})">
+                <div class="relative w-full aspect-[3/4] bg-gray-200 cursor-pointer group overflow-hidden" onclick="openCardModal(${card.id})">
                     <div class="skeleton-sweep absolute inset-0 z-0"></div>
                     <img src="${getOptimizedImageUrl(card.image)}" class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 relative z-10 opacity-0" onload="this.classList.remove('opacity-0');" loading="lazy">
                     <div class="absolute inset-0 z-20 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
@@ -491,7 +491,7 @@ function updateCartUI() {
         cart.forEach((item, index) => {
             cartHtml += `
                 <div class="bg-white rounded-xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] flex relative w-full p-2 gap-3 items-stretch hover:border-blue-100 transition-colors">
-                    <div class="relative w-[70px] shrink-0 bg-gray-100 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center" onclick="openLightbox(${item.id})">
+                    <div class="relative w-[70px] shrink-0 bg-gray-100 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center" onclick="openCardModal(${item.id})">
                         <img src="${getOptimizedImageUrl(item.image, 150)}" class="w-full h-full object-cover" loading="lazy">
                         ${item.badge ? `<span class="absolute top-1 left-1 bg-gray-900/90 text-white font-bold text-[7px] px-1.5 py-0.5 rounded-sm shadow-sm">${item.badge}</span>` : ''}
                     </div>
@@ -547,11 +547,11 @@ function updateCartUI() {
         
         if(lbBtn) {
             if(inCart) {
-                lbBtn.className = "w-full bg-yellow-400 text-gray-900 text-[13px] font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(250,204,21,0.25)] transition tap-effect flex items-center justify-center gap-2 mt-2";
-                lbBtn.innerHTML = `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> <span class="tracking-wide">อยู่ในตะกร้าแล้ว</span>`;
+                lbBtn.className = "w-full bg-yellow-400 text-gray-900 text-[13px] font-black px-4 py-3 rounded-xl shadow-[0_4px_20px_rgba(250,204,21,0.25)] transition tap-effect flex items-center justify-center gap-2";
+                lbBtn.innerHTML = `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> <span>อยู่ในตะกร้าแล้ว</span>`;
             } else {
-                lbBtn.className = "w-full bg-blue-600 text-white text-[13px] font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.35)] hover:bg-blue-500 transition tap-effect flex items-center justify-center gap-2 mt-2";
-                lbBtn.innerHTML = `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg> <span class="tracking-wide">เพิ่มลงตะกร้าสินค้า</span>`;
+                lbBtn.className = "w-full bg-blue-600 text-white text-[13px] font-black px-4 py-3 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.35)] hover:bg-blue-500 transition tap-effect flex items-center justify-center gap-2";
+                lbBtn.innerHTML = `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg> <span>เพิ่มลงตะกร้าสินค้า</span>`;
             }
         }
     });
@@ -774,7 +774,7 @@ function openLightbox(idOrSrc) {
             </div>
         `;
         details.classList.remove('hidden');
-    } else if (typeof idOrSrc === 'string' && idOrSrc.startsWith('data:image')) {
+    } else if (typeof idOrSrc === 'string') {
         // Mode 2: Credit Review Image (Base64)
         img.src = idOrSrc;
         details.innerHTML = '';
@@ -798,7 +798,14 @@ function closeLightbox(e) {
     closeModalState();
     const lb = document.getElementById('lightbox');
     lb.classList.add('opacity-0');
-    document.body.style.overflow = '';
+    
+    // Only restore overflow if no other modals are open
+    if (document.getElementById('card-modal') && document.getElementById('card-modal').classList.contains('hidden') && 
+        document.getElementById('bulk-search-modal').classList.contains('hidden') && 
+        document.getElementById('contact-modal').classList.contains('hidden')) {
+        document.body.style.overflow = '';
+    }
+    
     setTimeout(() => {
         lb.classList.add('hidden');
         document.getElementById('lightbox-img').src = '';
@@ -1503,3 +1510,94 @@ function copyOrderCode() {
 }
 
 
+
+let currentCardModalId = null;
+
+function openCardModal(id) {
+    const card = cards.find(c => c.id == id);
+    if (!card) return;
+    
+    currentCardModalId = id;
+    openModalState();
+    
+    const modal = document.getElementById('card-modal');
+    
+    // Set image
+    document.getElementById('cm-img').src = getOptimizedImageUrl(card.image, 600);
+    
+    // Set text
+    document.getElementById('cm-name').textContent = card.name || '';
+    
+    // Color dot
+    let colorMap = {
+        'red': 'bg-red-500',
+        'blue': 'bg-blue-500',
+        'green': 'bg-green-500',
+        'purple': 'bg-purple-500',
+        'black': 'bg-gray-800',
+        'yellow': 'bg-yellow-400',
+        'multi': 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500'
+    };
+    document.getElementById('cm-colordot').innerHTML = card.color ? `<div class="w-3.5 h-3.5 rounded-full ${colorMap[card.color.toLowerCase()] || 'bg-gray-400'} shadow-sm border border-white/40 shrink-0"></div>` : '';
+    
+    // Set / Rarity
+    let setDisplay = card.set || '-';
+    if (card.set && card.set.includes(' · ')) {
+        const parts = card.set.split(' · ');
+        setDisplay = `${parts[0]} · ${parts.slice(1).join(' · ')}`;
+    } else if (card.rarity) {
+        setDisplay = `${card.set || '-'} · ${card.rarity}`;
+    }
+    document.getElementById('cm-set-rarity').textContent = setDisplay;
+    
+    // Price
+    document.getElementById('cm-price').textContent = formatPrice(card.price);
+    
+    // Button
+    const inCart = cart.some(i => i.id === card.id);
+    const btnContainer = document.getElementById('cm-btn-container');
+    
+    const btnClass = inCart 
+        ? "w-full bg-yellow-400 text-gray-900 text-[13px] font-black px-4 py-3 rounded-xl shadow-[0_4px_20px_rgba(250,204,21,0.25)] transition tap-effect flex items-center justify-center gap-2" 
+        : "w-full bg-blue-600 text-white text-[13px] font-black px-4 py-3 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.35)] hover:bg-blue-500 transition tap-effect flex items-center justify-center gap-2";
+    const btnIcon = inCart 
+        ? `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>` 
+        : `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>`;
+    const btnText = inCart ? "อยู่ในตะกร้าแล้ว" : "เพิ่มลงตะกร้าสินค้า";
+    
+    btnContainer.innerHTML = `<button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass}">${btnIcon} <span>${btnText}</span></button>`;
+    
+    // Effect
+    const effectContainer = document.getElementById('cm-effect');
+    if (card.effect && card.effect.trim() !== '') {
+        effectContainer.textContent = card.effect;
+        effectContainer.parentElement.classList.remove('hidden');
+    } else {
+        effectContainer.parentElement.classList.add('hidden');
+    }
+    
+    // Show Modal
+    modal.classList.remove('hidden');
+    void modal.offsetWidth; // trigger reflow
+    modal.classList.remove('opacity-0');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCardModal() {
+    closeModalState();
+    const modal = document.getElementById('card-modal');
+    modal.classList.add('opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        if (document.getElementById('lightbox').classList.contains('hidden') && document.getElementById('cart-sidebar') === null && document.getElementById('bulk-search-modal').classList.contains('hidden') && document.getElementById('contact-modal').classList.contains('hidden')) {
+            document.body.style.overflow = '';
+        }
+    }, 300);
+}
+
+function openZoomModal() {
+    const src = document.getElementById('cm-img').src;
+    if (src) {
+        openLightbox(src);
+    }
+}

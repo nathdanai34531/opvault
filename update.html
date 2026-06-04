@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Updating Images...</h1>
+    <div id="status"></div>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8uFC6UUXnO3esLIB1xor51fqy0spi1ZY",
+            authDomain: "opvault-9fc81.firebaseapp.com",
+            projectId: "opvault-9fc81",
+            storageBucket: "opvault-9fc81.firebasestorage.app",
+            messagingSenderId: "207978482582",
+            appId: "1:207978482582:web:41022514fd338a6168abb7",
+            measurementId: "G-TMN4T4L7XG"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const localImages = [
+            "images/card1.png",
+            "images/card2.png",
+            "images/card3.png",
+            "images/card4.png",
+            "images/card5.png",
+            "images/card6.png",
+            "images/card7.png",
+            "images/card8.png",
+            "images/card9.png"
+        ];
+
+        async function run() {
+            try {
+                const snap = await db.collection("cards").get();
+                const badgeMap = {};
+                let count = 0;
+                
+                const batch = db.batch();
+                
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const badge = data.badge;
+                    if (!badgeMap[badge]) {
+                        badgeMap[badge] = localImages[Math.floor(Math.random() * localImages.length)];
+                    }
+                    const newImage = badgeMap[badge];
+                    batch.update(doc.ref, { image: newImage });
+                    count++;
+                });
+                
+                await batch.commit();
+                document.getElementById('status').innerText = `Successfully updated ${count} cards!`;
+                console.log(`Updated ${count} cards`);
+            } catch(e) {
+                document.getElementById('status').innerText = "Error: " + e;
+            }
+        }
+        
+        run();
+    </script>
+</body>
+</html>
