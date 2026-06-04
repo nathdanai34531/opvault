@@ -994,8 +994,9 @@ function renderLightboxCard(card) {
         const colorDisplay = translateColor(info.color || card.color);
         const attributeDisplay = translateAttribute(info.attribute);
         const setCode = cardCode.split('-')[0] || '';
-        const cleanSetName = info.setName ? info.setName.replace(/\[[A-Za-z0-9\-]+\]\s*/i, '').trim() : '';
-        const setNameDisplay = cleanSetName || '-';
+        let cleanSetName = info.setName ? info.setName.replace(/\[[A-Za-z0-9\-]+\]\s*/i, '').trim() : '';
+        cleanSetName = cleanSetName.replace(/^[-—\s]+|[-—\s]+$/g, '');
+        const setNameDisplay = cleanSetName ? `[${setCode}] ${cleanSetName}` : `[${setCode}]`;
         
         // Sanitize effect text - check if it contains attributes/traits/counter/illustrated text or is empty
         let effectText = info.effect || '';
