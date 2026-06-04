@@ -959,15 +959,15 @@ function renderLightboxCard(card) {
         
         let colorMap = {
             'red': 'bg-red-500',
-            'blue': 'bg-blue-500',
-            'green': 'bg-green-500',
+            'blue': 'bg-blue-600',
+            'green': 'bg-green-600',
             'purple': 'bg-purple-500',
             'black': 'bg-gray-800',
             'yellow': 'bg-yellow-400',
             'multi': 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500'
         };
         const colorClass = colorMap[(card.color || '').toLowerCase()] || 'bg-gray-400';
-        overlayColorDot.className = `px-2 py-0.5 rounded-full text-[10px] font-bold text-white shadow-sm border border-white/50 shrink-0 leading-none flex items-center justify-center ${colorClass}`;
+        overlayColorDot.className = `px-2 py-[3px] rounded-full text-[10px] font-bold text-white shadow-sm border border-white/50 shrink-0 leading-none flex items-center justify-center ${colorClass}`;
         overlayColorDot.textContent = `สี${translateColor(card.color || '')}`;
         
         let setDisplay = card.set || '';
@@ -1036,7 +1036,32 @@ function renderLightboxCard(card) {
         // Split into paragraphs for finer spacing control
         const spacedEffectHtml = effectText.split(/\n+/).map(p => {
             const pTrimmed = p.trim();
-            return pTrimmed ? `<p class="mb-2.5 last:mb-0">${formatEffectText(pTrimmed)}</p>` : '';
+            if (!pTrimmed) return '';
+            
+            let restText = pTrimmed;
+            let badgesHtml = '';
+            
+            // Extract all leading [...] badges that don't contain angle brackets
+            while (true) {
+                const match = restText.match(/^(\[[^\]<>]+\])\s*(.*)/);
+                if (match) {
+                    badgesHtml += formatEffectText(match[1]);
+                    restText = match[2];
+                } else {
+                    break;
+                }
+            }
+            
+            if (badgesHtml) {
+                return `
+                    <div class="flex items-start mb-2.5 last:mb-0">
+                        <div class="shrink-0 flex items-center flex-wrap -ml-1 mr-1 mt-[1px]">${badgesHtml}</div>
+                        <div class="flex-grow leading-relaxed">${formatEffectText(restText)}</div>
+                    </div>
+                `;
+            } else {
+                return `<p class="mb-2.5 last:mb-0">${formatEffectText(pTrimmed)}</p>`;
+            }
         }).join('');
         
         const effectHtml = (effectText && effectText.trim() !== '') ? `
