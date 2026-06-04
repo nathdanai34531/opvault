@@ -29,3 +29,8 @@ select { -webkit-appearance: none; appearance: none; }
     pointer-events: none;
     z-index: 10;
 }
+
+.slanted-badge {
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+    padding-right: 1.25rem !important;
+}
