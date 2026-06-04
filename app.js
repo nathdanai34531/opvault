@@ -962,7 +962,8 @@ function renderLightboxCard(card) {
             'multi': 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500'
         };
         const colorClass = colorMap[(card.color || '').toLowerCase()] || 'bg-gray-400';
-        overlayColorDot.className = `w-3 h-3 rounded-full ${colorClass} shadow-sm border border-white/50 shrink-0`;
+        overlayColorDot.className = `px-2 py-0.5 rounded-full text-[10px] font-bold text-white shadow-sm border border-white/50 shrink-0 leading-none flex items-center justify-center ${colorClass}`;
+        overlayColorDot.textContent = `สี${translateColor(card.color || '')}`;
         
         let setDisplay = card.set || '';
         if (card.rarity) {
@@ -996,6 +997,14 @@ function renderLightboxCard(card) {
         const setCode = cardCode.split('-')[0] || '';
         let cleanSetName = info.setName ? info.setName.replace(/\[[A-Za-z0-9\-]+\]\s*/i, '').trim() : '';
         cleanSetName = cleanSetName.replace(/^[-—\s]+|[-—\s]+$/g, '');
+        // Fallback if the regex stripped the entire string (e.g. if the name was just "[OP-13]")
+        if (!cleanSetName && info.setName) {
+            cleanSetName = info.setName.replace(/^[-—\s]+|[-—\s]+$/g, '');
+        }
+        // Fallback to basic card info if fetched info has no set name
+        if (!cleanSetName && card.setName) {
+            cleanSetName = card.setName.replace(/\[[A-Za-z0-9\-]+\]\s*/i, '').trim().replace(/^[-—\s]+|[-—\s]+$/g, '');
+        }
         const setNameDisplay = cleanSetName ? `[${setCode}] ${cleanSetName}` : `[${setCode}]`;
         
         // Sanitize effect text - check if it contains attributes/traits/counter/illustrated text or is empty
@@ -1086,13 +1095,9 @@ function renderLightboxCard(card) {
                             <span class="text-gray-500 font-bold shrink-0">ชุด:</span>
                             <span class="font-extrabold text-gray-200 text-left truncate">${setNameDisplay || '-'}</span>
                         </div>
-                        <div class="col-span-2 flex flex-col gap-0.5 border-b border-gray-800/40 pb-1">
+                        <div class="col-span-2 flex flex-col gap-0.5 pb-0">
                             <span class="text-gray-500 font-bold">คุณสมบัติ:</span>
                             <span class="font-extrabold text-gray-200 text-left break-words leading-relaxed">${info.traits || '-'}</span>
-                        </div>
-                        <div class="col-span-2 flex justify-start gap-2 pb-0 whitespace-nowrap">
-                            <span class="text-gray-500 font-bold shrink-0">หมวดหมู่:</span>
-                            <span class="font-extrabold text-gray-200 text-left">One Piece Card Game</span>
                         </div>
                     </div>
                 </div>
