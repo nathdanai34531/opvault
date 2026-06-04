@@ -320,8 +320,13 @@
                                 </div>
                             </div>
                             <input type="url" id="card-image" placeholder="https://..."
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none"
+                                oninput="updateImagePreview()">
                             <input type="hidden" id="card-image-base64">
+                            <!-- Image Preview -->
+                            <div id="image-preview-container" class="hidden mt-2 flex justify-center">
+                                <img id="card-image-preview" src="" alt="Preview" class="h-48 rounded-lg shadow-sm border border-gray-200 object-contain bg-gray-50">
+                            </div>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">

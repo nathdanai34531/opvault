@@ -453,10 +453,25 @@ function compressCardImage(event) {
             const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
             document.getElementById('card-image-base64').value = dataUrl;
             document.getElementById('card-image').value = dataUrl; // Show preview/URL
+            updateImagePreview();
         };
         img.src = e.target.result;
     };
     reader.readAsDataURL(file);
+}
+
+function updateImagePreview() {
+    const url = document.getElementById('card-image').value;
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImg = document.getElementById('card-image-preview');
+    
+    if (url && url.trim() !== '') {
+        previewImg.src = url;
+        previewContainer.classList.remove('hidden');
+    } else {
+        previewImg.src = '';
+        previewContainer.classList.add('hidden');
+    }
 }
 
 async function autoFetchCardData() {
@@ -535,7 +550,10 @@ async function autoFetchCardData() {
         
         // Populate Form
         if(cardName) document.getElementById('card-name').value = cardName;
-        if(imageUrl) document.getElementById('card-image').value = imageUrl;
+        if(imageUrl) {
+            document.getElementById('card-image').value = imageUrl;
+            updateImagePreview();
+        }
         
         if (cardCategory === 'Leader') {
             document.getElementById('card-rarity').value = 'Leader';
@@ -582,6 +600,15 @@ function openAddModal() {
     const status = document.getElementById('fetch-status');
     if(status) status.classList.add('hidden');
     document.getElementById('card-image-base64').value = '';
+    
+    // Reset image preview
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImg = document.getElementById('card-image-preview');
+    if (previewContainer && previewImg) {
+        previewImg.src = '';
+        previewContainer.classList.add('hidden');
+    }
+
     document.getElementById('modal-title').textContent = 'เพิ่มการ์ดใหม่';
     document.getElementById('card-modal').classList.remove('hidden');
 }
@@ -642,6 +669,8 @@ function editCard(id) {
         document.getElementById('card-color').value = card.color;
         document.getElementById('card-set').value = card.set || '';
         document.getElementById('card-badge').value = card.badge || '';
+        
+        updateImagePreview();
         
         document.getElementById('modal-title').textContent = 'แก้ไขข้อมูลการ์ด';
         document.getElementById('card-modal').classList.remove('hidden');
