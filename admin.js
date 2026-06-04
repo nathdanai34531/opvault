@@ -466,7 +466,7 @@ function updateImagePreview() {
     const previewImg = document.getElementById('card-image-preview');
     
     if (url && url.trim() !== '') {
-        previewImg.src = url;
+        previewImg.src = getOptimizedImageUrl(url, 300);
         previewContainer.classList.remove('hidden');
     } else {
         previewImg.src = '';
