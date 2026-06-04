@@ -1065,7 +1065,7 @@ function renderLightboxCard(card) {
         }).join('');
         
         const effectHtml = (effectText && effectText.trim() !== '') ? `
-            <div class="relative">
+            <div class="relative mt-2">
                 <div class="bg-gray-800/50 border border-gray-700/60 rounded-xl p-3 text-gray-200 text-[12px] leading-relaxed font-sarabun">
                     ${spacedEffectHtml}
                 </div>
