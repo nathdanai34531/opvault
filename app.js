@@ -800,7 +800,7 @@ function formatEffectText(text) {
             translatedKw = translations[kwLower];
         }
         
-        return `<span class="inline-flex items-center justify-center border border-blue-500/80 text-blue-400 font-extrabold text-[9px] px-1.5 py-0.5 rounded mx-1 bg-blue-500/5 align-middle">${translatedKw}</span>`;
+        return `<span class="inline-flex items-center justify-center bg-blue-600 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded mx-1 align-middle">${translatedKw}</span>`;
     });
 }
 
@@ -810,24 +810,19 @@ async function fetchCardDetails(cardCode) {
     if (!cardCode) return null;
     if (cardDetailsCache[cardCode]) return cardDetailsCache[cardCode];
     
-    const targetUrl = `https://onepiece.limitlesstcg.com/cards/${cardCode}`;
+    const targetUrl = `https://asia-th.onepiece-cardgame.com/cardlist/?search=true&freewords=${cardCode}`;
     try {
         let html = '';
-        // Try proxy 1
-        try {
+        const fallbackUrl = 'https://api.allorigins.win/get?url=';
+        const response = await fetch(fallbackUrl + encodeURIComponent(targetUrl));
+        if (response.ok) {
+            const data = await response.json();
+            html = data.contents;
+        } else {
+            // Try proxy 2 if allorigins fails
             const primaryUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
-            const response = await fetch(primaryUrl);
-            if (response.ok) html = await response.text();
-        } catch(e) {}
-        
-        // Try proxy 2
-        if (!html) {
-            const fallbackUrl = 'https://api.allorigins.win/get?url=';
-            const response = await fetch(fallbackUrl + encodeURIComponent(targetUrl));
-            if (response.ok) {
-                const data = await response.json();
-                html = data.contents;
-            }
+            const response2 = await fetch(primaryUrl);
+            if (response2.ok) html = await response2.text();
         }
         
         if (!html) return null;
@@ -835,59 +830,71 @@ async function fetchCardDetails(cardCode) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         
-        const nameEl = doc.querySelector('.card-text-name a');
-        const name = nameEl ? nameEl.textContent.trim() : '';
+        const cardDl = doc.querySelector(`dl.modalCol[id="${cardCode}"]`);
+        if (!cardDl) return null;
         
-        const categorySpan = doc.querySelector('.card-text-type span[data-tooltip="Category"]');
-        const category = categorySpan ? categorySpan.textContent.trim() : '';
+        const name = cardDl.querySelector('.cardName')?.textContent.trim() || '';
+        const infoSpans = cardDl.querySelectorAll('.infoCol span');
+        const rarity = infoSpans.length > 1 ? infoSpans[1].textContent.trim() : '';
+        const category = infoSpans.length > 2 ? infoSpans[2].textContent.trim() : '';
         
-        const colorSpan = doc.querySelector('.card-text-type span[data-tooltip="Color"]');
-        const color = colorSpan ? colorSpan.textContent.trim() : '';
-        
-        const typeText = doc.querySelector('.card-text-type') ? doc.querySelector('.card-text-type').textContent : '';
-        const costMatch = typeText.match(/(\d+)\s*Cost/i);
-        const cost = costMatch ? parseInt(costMatch[1]) : 0;
-        
-        const sectionTexts = Array.from(doc.querySelectorAll('.card-text-section')).map(el => el.textContent);
-        let power = 0;
-        let counter = 0;
-        
-        for (const text of sectionTexts) {
-            const powerMatch = text.match(/(\d+)\s*Power/i);
-            if (powerMatch) power = parseInt(powerMatch[1]);
-            
-            const counterMatch = text.match(/\+(\d+)\s*Counter/i) || text.match(/(\d+)\s*Counter/i);
-            if (counterMatch) counter = parseInt(counterMatch[1]);
+        let cost = 0;
+        const costNode = cardDl.querySelector('.cost');
+        if (costNode) {
+            const h3 = costNode.querySelector('h3');
+            if (h3) h3.remove();
+            cost = parseInt(costNode.textContent.trim().replace(/[^0-9]/g, '')) || 0;
         }
         
-        const attrSpan = doc.querySelector('.card-text-section span[data-tooltip="Attribute"]');
-        const attribute = attrSpan ? attrSpan.textContent.trim() : '';
+        let power = 0;
+        const powerNode = cardDl.querySelector('.power');
+        if (powerNode) {
+            const h3 = powerNode.querySelector('h3');
+            if (h3) h3.remove();
+            power = parseInt(powerNode.textContent.trim().replace(/[^0-9]/g, '')) || 0;
+        }
         
-        const traitSpan = doc.querySelector('.card-text-section span[data-tooltip="Type"]');
-        const traits = traitSpan ? traitSpan.textContent.trim() : '';
+        let counter = 0;
+        const counterNode = cardDl.querySelector('.counter');
+        if (counterNode) {
+            const h3 = counterNode.querySelector('h3');
+            if (h3) h3.remove();
+            counter = parseInt(counterNode.textContent.trim().replace(/[^0-9]/g, '')) || 0;
+        }
         
-        const setSpan = doc.querySelector('.prints-current-details span.text-lg');
-        const setName = setSpan ? setSpan.textContent.trim().replace(/\s*\(.*\)\s*$/, '') : '';
+        let color = '';
+        const colorNode = cardDl.querySelector('.color');
+        if (colorNode) {
+            const h3 = colorNode.querySelector('h3');
+            if (h3) h3.remove();
+            color = colorNode.textContent.trim();
+        }
+        
+        const attrNode = cardDl.querySelector('.attribute i');
+        const attribute = attrNode ? attrNode.textContent.trim() : '';
+        
+        let traits = '';
+        const featureNode = cardDl.querySelector('.feature');
+        if (featureNode) {
+            const h3 = featureNode.querySelector('h3');
+            if (h3) h3.remove();
+            traits = featureNode.textContent.trim();
+        }
         
         let effect = '';
-        const sections = doc.querySelectorAll('.card-text-section');
-        for (const sec of sections) {
-            if (!sec.querySelector('span[data-tooltip="Category"]') && 
-                !sec.querySelector('span[data-tooltip="Color"]') && 
-                !sec.querySelector('span[data-tooltip="Type"]') && 
-                !sec.querySelector('span[data-tooltip="Attribute"]') && 
-                !sec.querySelector('span[data-tooltip="Power"]') && 
-                !sec.querySelector('span[data-tooltip="Counter"]') && 
-                !sec.textContent.includes('Illustrated by')) {
-                const text = sec.textContent.trim();
-                if (text && !text.match(/^\d+\s*\+?\d+/)) {
-                    effect = sec.innerHTML.trim().replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
-                }
-            }
+        const textNode = cardDl.querySelector('.text');
+        if (textNode) {
+            const h3 = textNode.querySelector('h3');
+            if (h3) h3.remove();
+            effect = textNode.innerHTML.trim().replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
         }
         
-        if (effect) {
-            effect = await translateToThai(effect);
+        let setName = '';
+        const setNode = cardDl.querySelector('.getInfo');
+        if (setNode) {
+            const h3 = setNode.querySelector('h3');
+            if (h3) h3.remove();
+            setName = setNode.textContent.trim();
         }
         
         const details = {
@@ -900,13 +907,15 @@ async function fetchCardDetails(cardCode) {
             counter,
             traits,
             setName,
-            effect
+            effect,
+            rarity,
+            isOfficialThai: true
         };
         
         cardDetailsCache[cardCode] = details;
         return details;
     } catch(e) {
-        console.error("Error fetching card details from Limitless", e);
+        console.error("Error fetching card details from Thai OP Site", e);
         return null;
     }
 }
@@ -1010,7 +1019,7 @@ function renderLightboxCard(card) {
         
         const effectHtml = (effectText && effectText.trim() !== '') ? `
             <div class="relative mt-5 mb-2">
-                <div class="absolute -top-3 left-3 bg-blue-600 text-white font-extrabold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded shadow-sm border border-blue-500 z-10">
+                <div class="absolute -top-3 left-3 border border-blue-500/80 text-blue-400 bg-gray-900 font-extrabold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded z-10">
                     EFFECT
                 </div>
                 <div class="bg-gray-800/50 border border-gray-700/60 rounded-xl p-3 pt-4.5 text-gray-200 text-[11px] leading-relaxed whitespace-pre-line">
@@ -1100,7 +1109,7 @@ function renderLightboxCard(card) {
 
     // Helper to check and translate English effect on-the-fly
     const checkAndTranslateCardEffect = (infoObj) => {
-        if (infoObj && infoObj.effect && /[A-Za-z]/.test(infoObj.effect)) {
+        if (infoObj && infoObj.effect && /[A-Za-z]/.test(infoObj.effect) && !infoObj.isOfficialThai) {
             translateToThai(infoObj.effect).then(translatedText => {
                 if (translatedText && translatedText !== infoObj.effect) {
                     infoObj.effect = translatedText;
@@ -1147,7 +1156,6 @@ function renderLightboxCard(card) {
                         setTimeout(() => {
                             detailsContainer.innerHTML = renderContent(fetchedInfo);
                             detailsContainer.classList.remove('lightbox-transition-hidden');
-                            checkAndTranslateCardEffect(fetchedInfo);
                         }, 150);
                     }
                 }
