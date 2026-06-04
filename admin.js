@@ -492,19 +492,22 @@ async function translateToThai(text) {
 
 async function autoFetchCardData() {
     const cardSetInput = document.getElementById('card-set');
-    const cardId = cardSetInput.value.trim().toUpperCase();
-    if (!cardId) {
+    const cardCode = cardSetInput.value.trim().toUpperCase();
+    if (!cardCode) {
         alert("กรุณากรอกรหัสการ์ด (Card Code) ก่อนดึงข้อมูล");
         return;
     }
-    const cardCode = document.getElementById('card-code-input').value.trim().toUpperCase();
-    if (!cardCode) return;
     
     const status = document.getElementById('fetch-status');
-    const fetchBtn = document.getElementById('fetch-btn');
+    const btn = document.getElementById('btn-fetch-data');
+    const originalBtnText = btn.innerHTML;
     
     status.innerHTML = `<span class="text-blue-600 font-medium">กำลังค้นหาข้อมูล ${cardCode}...</span>`;
-    fetchBtn.disabled = true;
+    status.classList.remove('hidden', 'text-red-500', 'text-green-500');
+    status.classList.add('text-blue-600');
+    
+    btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>กำลังดึง...</span>`;
+    btn.disabled = true;
     
     try {
         const targetUrl = 'https://asia-th.onepiece-cardgame.com/cardlist/?freewords=' + encodeURIComponent(cardCode);
