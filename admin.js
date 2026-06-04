@@ -616,7 +616,7 @@ async function autoFetchCardData() {
         status.textContent = `❌ ${error.message}`;
         status.classList.remove('text-gray-500');
         status.classList.add('text-red-500');
-    } finally { finally {
+    } finally {
         btn.innerHTML = originalBtnText;
         btn.disabled = false;
         
