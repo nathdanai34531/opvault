@@ -560,6 +560,8 @@ async function autoFetchCardData() {
             } else if (imageUrl.startsWith('/')) {
                 imageUrl = 'https://asia-th.onepiece-cardgame.com' + imageUrl;
             }
+            // Use wsrv.nl proxy to bypass CORS/Same-Site restrictions for images
+            imageUrl = 'https://wsrv.nl/?url=' + encodeURIComponent(imageUrl);
         }
 
         const colorEl = cardEl.querySelector('.color');
