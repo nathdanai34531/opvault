@@ -474,6 +474,22 @@ function updateImagePreview() {
     }
 }
 
+async function translateToThai(text) {
+    if (!text) return '';
+    try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=th&dt=t&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data && data[0]) {
+            return data[0].map(item => item[0]).join('');
+        }
+        return text;
+    } catch(e) {
+        console.error('Translation error:', e);
+        return text;
+    }
+}
+
 async function autoFetchCardData() {
     const cardSetInput = document.getElementById('card-set');
     const cardId = cardSetInput.value.trim().toUpperCase();
@@ -579,6 +595,14 @@ async function autoFetchCardData() {
                     }
                 }
             });
+            
+            if (effectText) {
+                try {
+                    status.innerHTML = `<span class="text-blue-600 font-medium">กำลังแปลความสามารถเป็นภาษาไทย...</span>`;
+                    effectText = await translateToThai(effectText);
+                } catch(e) {}
+            }
+            
             document.getElementById('card-effect').value = effectText;
 
             const colorSelect = document.getElementById('card-color');
