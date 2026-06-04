@@ -44,7 +44,7 @@ select { -webkit-appearance: none; appearance: none; }
     color: #ffffff;
     font-weight: 700;
     font-size: 9px;
-    padding: 3px 6px;
+    padding: 2px 6px;
     clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0% 50%);
     white-space: nowrap;
     letter-spacing: 0.3px;
