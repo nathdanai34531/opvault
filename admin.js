@@ -570,11 +570,12 @@ async function autoFetchCardData() {
                 if (sec.tagName.toLowerCase() === 'div' && 
                     !sec.querySelector('.card-text-title') && 
                     !sec.querySelector('[data-tooltip="Type"]') &&
-                    !sec.querySelector('.card-legality-group')) {
+                    !sec.querySelector('.card-legality-group') &&
+                    !sec.classList.contains('card-text-artist')) {
                     
                     let text = sec.textContent.replace(/\s+/g, ' ').trim();
                     if (text && text !== 'legal' && text !== 'not legal' && !text.includes('Standard Extra')) {
-                        effectText = text;
+                        effectText += (effectText ? '\n' : '') + text;
                     }
                 }
             });
