@@ -1,6 +1,6 @@
 {
-  "name": "OP.VAULT",
-  "short_name": "OP.VAULT",
+  "name": "OP Vault",
+  "short_name": "OP Vault",
   "description": "One Piece Card Game Vault and Store",
   "start_url": "/",
   "display": "standalone",
