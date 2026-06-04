@@ -713,51 +713,58 @@ function openLightbox(idOrSrc) {
             : `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>`;
         const btnText = inCart ? "อยู่ในตะกร้าแล้ว" : "เพิ่มลงตะกร้าสินค้า";
 
+        let colorMap = {
+            'red': 'bg-red-500',
+            'blue': 'bg-blue-500',
+            'green': 'bg-green-500',
+            'purple': 'bg-purple-500',
+            'black': 'bg-gray-800',
+            'yellow': 'bg-yellow-400',
+            'multi': 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500'
+        };
+        let colorDot = card.color ? `<div class="w-3 h-3 rounded-full ${colorMap[card.color.toLowerCase()] || 'bg-gray-400'} shadow-sm border border-gray-600 shrink-0"></div>` : '';
+
+        let setDisplay = `<span class="text-blue-400">${card.set || '-'}</span>`;
+        if (card.set && card.set.includes(' · ')) {
+            const parts = card.set.split(' · ');
+            setDisplay = `<span class="text-blue-400">${parts[0]}</span> <span class="text-gray-400 font-medium">· ${parts.slice(1).join(' · ')}</span>`;
+        } else if (card.rarity) {
+            setDisplay = `<span class="text-blue-400">${card.set || '-'}</span> <span class="text-gray-400 font-medium">· ${card.rarity}</span>`;
+        }
+
         details.innerHTML = `
-            <div class="flex flex-col gap-3.5">
-                <!-- Header: Title & SKU -->
-                <div class="flex justify-between items-start gap-3">
-                    <div class="flex-grow">
-                        <span class="text-[10px] font-bold text-yellow-400 uppercase tracking-widest">${card.cardCode || card.set || card.rarity}</span>
-                        <h2 class="text-lg font-black text-white leading-tight mt-0.5">${card.name}</h2>
-                    </div>
-                    <div class="text-right shrink-0 bg-gray-800/80 px-2.5 py-1.5 rounded-lg border border-gray-700">
-                        <span class="text-[8px] font-bold text-gray-400 uppercase block mb-0.5">รหัสสินค้า</span>
-                        <div class="text-[11px] font-extrabold text-gray-200 tracking-wider">${card.code}</div>
+            <div class="flex flex-col gap-3">
+                <!-- Header: Name -->
+                <div>
+                    <h2 class="text-2xl font-black text-white leading-tight line-clamp-1">${card.name}</h2>
+                    <div class="font-bold text-[14px] tracking-wide uppercase flex items-center gap-2 mt-1.5">
+                        ${colorDot}
+                        ${setDisplay}
                     </div>
                 </div>
 
-                <!-- Price & Badges -->
-                <div class="flex justify-between items-end gap-2">
-                    <div class="flex flex-wrap gap-2">
-                        <div class="px-2.5 py-1 bg-white/5 rounded-lg border border-white/10 flex flex-col">
-                            <span class="text-[8px] text-gray-500 uppercase font-bold">สีการ์ด</span>
-                            <span class="text-xs font-bold text-white capitalize">${card.color}</span>
-                        </div>
-                        <div class="px-2.5 py-1 bg-white/5 rounded-lg border border-white/10 flex flex-col">
-                            <span class="text-[8px] text-gray-500 uppercase font-bold">ประเภท</span>
-                            <span class="text-xs font-bold text-white">${card.rarity}</span>
-                        </div>
-                        ${card.badge ? `
-                        <div class="px-2.5 py-1 bg-yellow-400/10 rounded-lg border border-yellow-400/20 flex flex-col">
-                            <span class="text-[8px] text-yellow-500 uppercase font-bold">เกรด</span>
-                            <span class="text-xs font-bold text-yellow-400">${card.badge}</span>
-                        </div>` : ''}
-                    </div>
-                    <div class="text-right shrink-0">
-                        <span class="text-2xl font-black text-white tracking-tight leading-none">${formatPrice(card.price)}</span>
-                    </div>
+                <!-- Price, SKU, Badges -->
+                <div class="flex flex-wrap items-center gap-2 mt-1">
+                    <span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-md border border-green-400/20 font-extrabold text-lg shadow-sm">${formatPrice(card.price)}</span>
+                    ${card.code ? `
+                    <span class="text-gray-300 bg-gray-800 px-2.5 py-1.5 rounded-md text-[13px] font-semibold border border-gray-700 flex items-center gap-1.5">
+                        <span class="text-gray-500 font-black">#</span> ${card.code}
+                    </span>` : ''}
+                    ${card.badge ? `
+                    <span class="text-yellow-400 bg-yellow-400/10 px-2.5 py-1.5 rounded-md text-[13px] font-bold border border-yellow-400/20">
+                        ${card.badge}
+                    </span>` : ''}
                 </div>
 
                 ${card.effect ? `
                 <div class="bg-white/5 rounded-lg border border-white/10 p-3 mt-1">
-                    <span class="text-[9px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Effect</span>
-                    <p class="text-[11px] text-gray-300 leading-relaxed font-medium">${card.effect}</p>
+                    <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-1.5">ความสามารถ (Effect)</span>
+                    <p class="text-xs text-gray-300 leading-relaxed font-medium whitespace-pre-line">${card.effect}</p>
                 </div>
                 ` : ''}
 
                 <!-- Action Button -->
-                <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass}">
+                <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass} mt-1">
                     ${btnIcon} <span>${btnText}</span>
                 </button>
             </div>
