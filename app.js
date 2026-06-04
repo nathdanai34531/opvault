@@ -994,7 +994,8 @@ function renderLightboxCard(card) {
         const colorDisplay = translateColor(info.color || card.color);
         const attributeDisplay = translateAttribute(info.attribute);
         const setCode = cardCode.split('-')[0] || '';
-        const setNameDisplay = info.setName ? `[${setCode}] ${info.setName}` : `[${setCode}]`;
+        const cleanSetName = info.setName ? info.setName.replace(/\[[A-Za-z0-9\-]+\]\s*/i, '').trim() : '';
+        const setNameDisplay = cleanSetName || '-';
         
         // Sanitize effect text - check if it contains attributes/traits/counter/illustrated text or is empty
         let effectText = info.effect || '';
@@ -1020,12 +1021,12 @@ function renderLightboxCard(card) {
         // Split into paragraphs for finer spacing control
         const spacedEffectHtml = effectText.split(/\n+/).map(p => {
             const pTrimmed = p.trim();
-            return pTrimmed ? `<p class="mb-1.5 last:mb-0">${formatEffectText(pTrimmed)}</p>` : '';
+            return pTrimmed ? `<p class="mb-2.5 last:mb-0">${formatEffectText(pTrimmed)}</p>` : '';
         }).join('');
         
         const effectHtml = (effectText && effectText.trim() !== '') ? `
             <div class="relative mt-3 mb-2">
-                <div class="bg-gray-800/50 border border-gray-700/60 rounded-xl p-3 text-gray-200 text-[11px] leading-relaxed font-sarabun">
+                <div class="bg-gray-800/50 border border-gray-700/60 rounded-xl p-3 text-gray-200 text-[12px] leading-relaxed font-sarabun">
                     ${spacedEffectHtml}
                 </div>
             </div>
@@ -1040,7 +1041,7 @@ function renderLightboxCard(card) {
                         <span class="text-xl font-black text-white tracking-tight leading-none">${formatPrice(card.price)}</span>
                     </div>
                     <div class="flex-grow max-w-[200px]">
-                        <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass} !my-0 !py-2.5 !text-xs w-full">
+                        <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass} !my-0 !py-2.5 !px-2 !text-xs w-full">
                             ${btnIcon} <span>${btnText}</span>
                         </button>
                     </div>
@@ -1052,57 +1053,45 @@ function renderLightboxCard(card) {
                 <!-- Detailed Attributes Grid -->
                 <div class="bg-gray-950/40 rounded-xl border border-gray-800/50 p-3 mt-1">
                     <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1 min-w-0">
-                            <span class="text-gray-500 font-bold shrink-0">ชื่อ:</span>
-                            <span class="font-extrabold text-gray-200 truncate ml-2 text-right">${card.name}</span>
+                        <div class="flex justify-start gap-2 border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold shrink-0">ประเภท:</span>
+                            <span class="font-extrabold text-gray-200 text-left">${typeDisplay || '-'}</span>
                         </div>
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1 min-w-0">
-                            <span class="text-gray-500 font-bold shrink-0">รหัสการ์ด:</span>
-                            <span class="font-extrabold text-yellow-400 font-mono ml-2 text-right">${cardCode || '-'}</span>
+                        <div class="flex justify-start gap-2 border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold shrink-0">ธีมสี:</span>
+                            <span class="font-extrabold text-gray-200 text-left">${colorDisplay || '-'}</span>
                         </div>
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
-                            <span class="text-gray-500 font-bold">ประเภท:</span>
-                            <span class="font-extrabold text-gray-200">${typeDisplay || '-'}</span>
+                        <div class="flex justify-start gap-2 border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold shrink-0">คอสท์:</span>
+                            <span class="font-extrabold text-yellow-400 font-mono text-left">${info.cost !== undefined ? info.cost : '-'}</span>
                         </div>
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
-                            <span class="text-gray-500 font-bold">ธีมสี:</span>
-                            <span class="font-extrabold text-gray-200">${colorDisplay || '-'}</span>
+                        <div class="flex justify-start gap-2 border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold shrink-0">คุณลักษณะ:</span>
+                            <span class="font-extrabold text-gray-200 text-left">${attributeDisplay || '-'}</span>
                         </div>
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
-                            <span class="text-gray-500 font-bold">คอสท์:</span>
-                            <span class="font-extrabold text-yellow-400 font-mono">${info.cost !== undefined ? info.cost : '-'}</span>
+                        <div class="flex justify-start gap-2 border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold shrink-0">พาวเวอร์:</span>
+                            <span class="font-extrabold text-gray-200 font-mono text-left">${info.power || '-'}</span>
                         </div>
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
-                            <span class="text-gray-500 font-bold">คุณลักษณะ:</span>
-                            <span class="font-extrabold text-gray-200">${attributeDisplay || '-'}</span>
+                        <div class="flex justify-start gap-2 border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold shrink-0">เคาน์เตอร์:</span>
+                            <span class="font-extrabold text-gray-200 font-mono text-left">${info.counter ? `+${info.counter}` : '-'}</span>
                         </div>
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
-                            <span class="text-gray-500 font-bold">พาวเวอร์:</span>
-                            <span class="font-extrabold text-gray-200 font-mono">${info.power || '-'}</span>
+                        <div class="flex justify-start gap-2 border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold shrink-0">ระดับ:</span>
+                            <span class="font-extrabold text-gray-200 text-left">${card.rarity || '-'}</span>
                         </div>
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
-                            <span class="text-gray-500 font-bold">เคาน์เตอร์:</span>
-                            <span class="font-extrabold text-gray-200 font-mono">${info.counter ? `+${info.counter}` : '-'}</span>
-                        </div>
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
-                            <span class="text-gray-500 font-bold">ระดับ:</span>
-                            <span class="font-extrabold text-gray-200">${card.rarity || '-'}</span>
-                        </div>
-                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
-                            <span class="text-gray-500 font-bold">รหัสชุด:</span>
-                            <span class="font-extrabold text-gray-200 font-mono">${setCode || '-'}</span>
-                        </div>
-                        <div class="col-span-2 flex justify-between border-b border-gray-800/40 pb-1">
+                        <div class="flex justify-start gap-2 border-b border-gray-800/40 pb-1 min-w-0">
                             <span class="text-gray-500 font-bold shrink-0">ชุด:</span>
-                            <span class="font-extrabold text-gray-200 truncate ml-2 text-right">${setNameDisplay || '-'}</span>
+                            <span class="font-extrabold text-gray-200 text-left truncate">${setNameDisplay || '-'}</span>
                         </div>
                         <div class="col-span-2 flex flex-col gap-0.5 border-b border-gray-800/40 pb-1">
                             <span class="text-gray-500 font-bold">คุณสมบัติ:</span>
                             <span class="font-extrabold text-gray-200 text-left break-words leading-relaxed">${info.traits || '-'}</span>
                         </div>
-                        <div class="flex justify-between pb-0">
-                            <span class="text-gray-500 font-bold">หมวดหมู่:</span>
-                            <span class="font-extrabold text-gray-200">One Piece Card Game</span>
+                        <div class="col-span-2 flex justify-start gap-2 pb-0 whitespace-nowrap">
+                            <span class="text-gray-500 font-bold shrink-0">หมวดหมู่:</span>
+                            <span class="font-extrabold text-gray-200 text-left">One Piece Card Game</span>
                         </div>
                     </div>
                 </div>
