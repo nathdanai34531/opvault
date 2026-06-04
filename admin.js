@@ -497,30 +497,27 @@ async function autoFetchCardData() {
         alert("กรุณากรอกรหัสการ์ด (Card Code) ก่อนดึงข้อมูล");
         return;
     }
-
-    const btn = document.getElementById('btn-fetch-data');
-    const status = document.getElementById('fetch-status');
-    const originalBtnText = btn.innerHTML;
+    const cardCode = document.getElementById('card-code-input').value.trim().toUpperCase();
+    if (!cardCode) return;
     
-    btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>กำลังดึง...</span>`;
-    btn.disabled = true;
-    status.classList.remove('hidden');
-    status.classList.remove('text-red-500', 'text-green-500');
-    status.classList.add('text-gray-500');
-    status.textContent = "กำลังเชื่อมต่อฐานข้อมูล...";
-
+    const status = document.getElementById('fetch-status');
+    const fetchBtn = document.getElementById('fetch-btn');
+    
+    status.innerHTML = `<span class="text-blue-600 font-medium">กำลังค้นหาข้อมูล ${cardCode}...</span>`;
+    fetchBtn.disabled = true;
+    
     try {
-        const targetUrl = `https://onepiece.limitlesstcg.com/cards/${cardId}`;
+        const targetUrl = 'https://asia-th.onepiece-cardgame.com/cardlist/?freewords=' + encodeURIComponent(cardCode);
+        const primaryUrl = 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(targetUrl);
+        
         let html = '';
-
         try {
-            const primaryUrl = `https://api.codetabs.com/v1/proxy/?quest=${targetUrl}`;
             const response = await fetch(primaryUrl);
             if (response.ok) {
                 html = await response.text();
             }
         } catch (e) {
-            console.warn("Codetabs proxy failed, trying fallback...");
+            console.warn("Proxy failed, trying fallback...");
         }
 
         if (!html) {
@@ -531,90 +528,83 @@ async function autoFetchCardData() {
             html = data.contents;
         }
         
-        if (!html || html.includes('<title>Page not found') || html.includes('Page Not Found') || html.includes('<title>Limitless</title>')) {
-             throw new Error('ไม่พบรหัสการ์ดนี้ในระบบ LimitlessTCG');
-        }
-
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        // Extract Name
-        const nameEl = doc.querySelector('.card-text-name a');
-        let cardName = nameEl ? nameEl.textContent.trim() : '';
-        if(!cardName) {
-            const ogTitle = doc.querySelector('meta[property="og:title"]');
-            if(ogTitle) {
-                 const content = ogTitle.getAttribute('content');
-                 cardName = content ? content.split('(')[0].trim() : '';
+        let cardEl = doc.getElementById(cardCode);
+        if (!cardEl) {
+            cardEl = doc.querySelector('.modalCol');
+        }
+
+        if (!cardEl) {
+             throw new Error('ไม่พบรหัสการ์ดนี้ในระบบ Official Thai Site');
+        }
+
+        const nameEl = cardEl.querySelector('.cardName');
+        const cardName = nameEl ? nameEl.textContent.trim() : '';
+
+        const infoSpans = cardEl.querySelectorAll('.infoCol span');
+        let cardRarity = '';
+        if (infoSpans.length >= 2) {
+            cardRarity = infoSpans[1].textContent.trim();
+        }
+
+        const imgEl = cardEl.querySelector('.frontCol img');
+        let imageUrl = imgEl ? (imgEl.getAttribute('data-src') || imgEl.getAttribute('src')) : '';
+        if (imageUrl) {
+            if (imageUrl.startsWith('..')) {
+                imageUrl = imageUrl.replace('..', 'https://asia-th.onepiece-cardgame.com');
+            } else if (imageUrl.startsWith('/')) {
+                imageUrl = 'https://asia-th.onepiece-cardgame.com' + imageUrl;
             }
         }
 
-        // Extract Image
-        const imgEl = doc.querySelector('meta[property="og:image"]');
-        let imageUrl = imgEl ? imgEl.getAttribute('content') : '';
-        if (imageUrl && !imageUrl.startsWith('http')) {
-            imageUrl = 'https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com' + imageUrl;
+        const colorEl = cardEl.querySelector('.color');
+        let rawColor = colorEl ? colorEl.textContent.replace('ธีมสี', '').trim() : '';
+        let cardColor = '';
+        if (rawColor.includes('/')) {
+            cardColor = 'multi';
+        } else {
+            if (rawColor.includes('แดง')) cardColor = 'red';
+            else if (rawColor.includes('เขียว')) cardColor = 'green';
+            else if (rawColor.includes('ฟ้า')) cardColor = 'blue';
+            else if (rawColor.includes('ม่วง')) cardColor = 'purple';
+            else if (rawColor.includes('ดำ')) cardColor = 'black';
+            else if (rawColor.includes('เหลือง')) cardColor = 'yellow';
         }
-
-        // Extract Color
-        const colorSpan = doc.querySelector('.card-text-type span[data-tooltip="Color"]');
-        let cardColor = colorSpan ? colorSpan.textContent.trim().toLowerCase() : '';
-
-        // Extract Category for Rarity fallback
-        const categorySpan = doc.querySelector('.card-text-type span[data-tooltip="Category"]');
-        let cardCategory = categorySpan ? categorySpan.textContent.trim() : '';
         
-        // Populate Form
         if(cardName) document.getElementById('card-name').value = cardName;
         if(imageUrl) {
             document.getElementById('card-image').value = imageUrl;
             updateImagePreview();
         }
-        
-        if (cardCategory === 'Leader') {
-            document.getElementById('card-rarity').value = 'L';
-        } else {
-            // Force user to select rarity since LimitlessTCG doesn't provide it clearly
-            document.getElementById('card-rarity').value = '';
+
+        if (cardRarity) {
+            document.getElementById('card-rarity').value = cardRarity;
+        }
+
+        const textEl = cardEl.querySelector('.text');
+        let effectText = '';
+        if (textEl) {
+            const clone = textEl.cloneNode(true);
+            const h3 = clone.querySelector('h3');
+            if (h3) h3.remove();
+            effectText = clone.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = effectText;
+            effectText = tempDiv.textContent.trim();
         }
         
-        if(cardColor) {
-            // Extract Effect (Ability)
-            let effectText = '';
-            const sections = doc.querySelectorAll('.card-text-section');
-            sections.forEach(sec => {
-                if (sec.tagName.toLowerCase() === 'div' && 
-                    !sec.querySelector('.card-text-title') && 
-                    !sec.querySelector('[data-tooltip="Type"]') &&
-                    !sec.querySelector('.card-legality-group') &&
-                    !sec.classList.contains('card-text-artist')) {
-                    
-                    let text = sec.textContent.replace(/\s+/g, ' ').trim();
-                    if (text && text !== 'legal' && text !== 'not legal' && !text.includes('Standard Extra')) {
-                        effectText += (effectText ? '\n' : '') + text;
-                    }
-                }
-            });
-            
-            if (effectText) {
-                try {
-                    status.innerHTML = `<span class="text-blue-600 font-medium">กำลังแปลความสามารถเป็นภาษาไทย...</span>`;
-                    effectText = await translateToThai(effectText);
-                } catch(e) {}
-            }
-            
+        if (effectText) {
             document.getElementById('card-effect').value = effectText;
+        } else {
+            document.getElementById('card-effect').value = '';
+        }
 
-            const colorSelect = document.getElementById('card-color');
-            const options = Array.from(colorSelect.options).map(o => o.value);
-            // check if exact match
-            if(options.includes(cardColor)) {
-                colorSelect.value = cardColor;
-            } else if (cardColor.includes('/')) {
-                // Multi-color, for now just pick the first color
-                const firstColor = cardColor.split('/')[0];
-                if(options.includes(firstColor)) colorSelect.value = firstColor;
-            }
+        const colorSelect = document.getElementById('card-color');
+        const options = Array.from(colorSelect.options).map(o => o.value);
+        if(options.includes(cardColor)) {
+            colorSelect.value = cardColor;
         }
 
         status.textContent = "✅ ดึงข้อมูลสำเร็จ!";
@@ -626,7 +616,7 @@ async function autoFetchCardData() {
         status.textContent = `❌ ${error.message}`;
         status.classList.remove('text-gray-500');
         status.classList.add('text-red-500');
-    } finally {
+    } finally { finally {
         btn.innerHTML = originalBtnText;
         btn.disabled = false;
         
