@@ -1035,7 +1035,7 @@ function renderLightboxCard(card) {
         }).join('');
         
         const effectHtml = (effectText && effectText.trim() !== '') ? `
-            <div class="relative mt-3 mb-2">
+            <div class="relative">
                 <div class="bg-gray-800/50 border border-gray-700/60 rounded-xl p-3 text-gray-200 text-[12px] leading-relaxed font-sarabun">
                     ${spacedEffectHtml}
                 </div>
@@ -1061,7 +1061,7 @@ function renderLightboxCard(card) {
                 ${effectHtml}
 
                 <!-- Detailed Attributes Grid -->
-                <div class="bg-gray-950/40 rounded-xl border border-gray-800/50 p-3 mt-1">
+                <div class="bg-gray-950/40 rounded-xl border border-gray-800/50 p-3">
                     <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
                         <div class="flex justify-start gap-2 border-b border-gray-800/40 pb-1">
                             <span class="text-gray-500 font-bold shrink-0">ประเภท:</span>
