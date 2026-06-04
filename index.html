@@ -287,13 +287,15 @@
         <div id="overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/40 z-[48] hidden backdrop-blur-sm transition-opacity opacity-0"></div>
 
         <!-- Lightbox -->
-        <div id="lightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex-col items-center justify-center p-4 transition-opacity opacity-0 backdrop-blur-md" onclick="closeLightbox(event)">
-            <button class="absolute top-4 right-4 text-white/50 hover:text-white p-2 tap-effect z-10 bg-black/40 rounded-full" onclick="closeLightbox(event)">
+        <div id="lightbox" class="fixed inset-0 bg-black/95 z-[100] hidden overflow-y-auto transition-opacity opacity-0 backdrop-blur-md" onclick="closeLightbox(event)">
+            <button class="fixed top-4 right-4 text-white/50 hover:text-white p-2 tap-effect z-[110] bg-black/40 rounded-full" onclick="closeLightbox(event)">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <div class="relative w-full max-w-[400px] h-full max-h-[95vh] flex flex-col bg-gray-900 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10" onclick="event.stopPropagation()">
-                <div class="flex-grow relative bg-black flex items-center justify-center min-h-0 overflow-hidden" id="lightbox-img-container">
-                    <img id="lightbox-img" src="" class="w-full h-full object-contain">
+            <div class="min-h-full flex flex-col items-center sm:p-4 pb-10" onclick="closeLightbox(event)">
+                <div class="relative w-full max-w-[450px] flex flex-col bg-gray-900 sm:rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10" onclick="event.stopPropagation()">
+                    
+                    <div class="relative w-full h-[100vh] sm:h-[85vh] bg-black flex items-center justify-center overflow-hidden" id="lightbox-img-container">
+                        <img id="lightbox-img" src="" class="w-full h-full object-contain">
                     <div class="absolute inset-0 pointer-events-none" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ctext x='50%25' y='50%25' transform='rotate(-35 80 80)' text-anchor='middle' fill='rgba(255,255,255,0.25)' stroke='rgba(0,0,0,0.25)' stroke-width='1.5' font-size='22' font-family='sans-serif' font-weight='900' letter-spacing='3'%3EOP.VAULT%3C/text%3E%3C/svg%3E&quot;); background-repeat: repeat; z-index: 10;"></div>
                     
                     <button id="lightbox-prev" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hidden hover:bg-black/80 tap-effect z-20" onclick="navigateLightbox(-1, event)">
@@ -307,6 +309,7 @@
                 <div id="lightbox-details" class="p-4 bg-gray-900 text-white shrink-0 border-t border-gray-800">
                     <!-- details injected here -->
                 </div>
+            </div>
             </div>
         </div>
 

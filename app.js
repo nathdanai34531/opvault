@@ -776,6 +776,7 @@ function openLightbox(idOrSrc) {
     // trigger reflow
     void lb.offsetWidth;
     lb.classList.remove('opacity-0');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeLightbox(e) {
@@ -786,6 +787,7 @@ function closeLightbox(e) {
     closeModalState();
     const lb = document.getElementById('lightbox');
     lb.classList.add('opacity-0');
+    document.body.style.overflow = '';
     setTimeout(() => {
         lb.classList.add('hidden');
         document.getElementById('lightbox-img').src = '';
