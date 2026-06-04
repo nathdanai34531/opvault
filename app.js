@@ -1,5 +1,8 @@
 
 let isModalOpen = false;
+let currentFilteredCardIds = [];
+let currentLightboxCardIds = [];
+let currentLightboxCardIndex = -1;
 
 function openModalState() {
     if (!isModalOpen) {
@@ -23,10 +26,6 @@ window.addEventListener('popstate', (e) => {
 });
 
 function closeAllModals() {
-    const cardModal = document.getElementById('card-modal');
-    if (cardModal && !cardModal.classList.contains('hidden')) {
-        closeCardModal();
-    }
     const lb = document.getElementById('lightbox');
     if (lb && !lb.classList.contains('hidden')) {
         closeModalState();
@@ -159,7 +158,7 @@ function setLightboxZoom(level, event) {
 
 // Data Initialize
 const imagePool = ['images/card1.png', 'images/card2.png', 'images/card3.png', 'images/card4.png', 'images/card5.png', 'images/card6.png', 'images/card7.png', 'images/card8.png', 'images/card9.png'];
-const rarities = ['Manga', 'SEC', 'SR', 'L', 'Leader', 'R', 'UC', 'C'];
+const rarities = ['Manga', 'SEC', 'SR', 'Leader', 'R', 'UC', 'C'];
 const colors = ['red', 'green', 'blue', 'purple', 'black', 'yellow'];
 const sets = ['OP01', 'OP02', 'OP03', 'OP04', 'OP05', 'OP06', 'EB01', 'EB02', 'OP07', 'OP08'];
 const badges = ['', '', '', '', '', '', '', '', '', ''];
@@ -176,7 +175,6 @@ let selectedCodes = [...userCodes].sort(() => 0.5 - Math.random()).slice(0, Math
 // Removed defaultCards generation to prevent fake data on new devices
 
 let cards = [];
-let currentFilteredCards = [];
 let currentCredits = [];
 
 // Initialize Firebase Listeners and Migrate Local Data
@@ -262,13 +260,9 @@ function getOptimizedImageUrl(url, width = 300) {
     
     try {
         const urlObj = new URL(url);
-        // If it's already using wsrv.nl proxy, don't double proxy it, just return it as is or modify width
-        if (urlObj.hostname.includes('wsrv.nl')) {
-            return url;
-        }
-        
         if (urlObj.hostname.includes('onepiece-cardgame.com') || urlObj.hostname.includes('limitlesstcg')) {
-            return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp`;
+            // Use wsrv.nl instead of statically because statically blocks limitless cdn
+            return `https://wsrv.nl/?url=${urlObj.hostname}${urlObj.pathname}&w=${width}&output=webp`;
         }
     } catch(e) {}
     
@@ -307,8 +301,6 @@ function renderCards() {
     if (sortVal === 'price-desc') filtered.sort((a,b) => b.price - a.price);
     if (sortVal === 'code-asc') filtered.sort((a,b) => (a.set || '').localeCompare(b.set || ''));
     if (sortVal === 'code-desc') filtered.sort((a,b) => (b.set || '').localeCompare(a.set || ''));
-    
-    currentFilteredCards = filtered;
 
     if (filtered.length === 0) {
         container.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 text-sm">ไม่พบการ์ดที่ค้นหา</div>`;
@@ -346,7 +338,7 @@ function renderCards() {
             <div class="card-item bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex flex-col relative transition-transform hover:-translate-y-1">
                 ${badgeHtml}
                 ${codeHtml}
-                <div class="relative w-full aspect-[3/4] bg-gray-200 cursor-pointer group overflow-hidden" onclick="openCardModal(${card.id})">
+                <div class="relative w-full aspect-[3/4] bg-gray-200 cursor-pointer group overflow-hidden" onclick="openLightbox(${card.id})">
                     <div class="skeleton-sweep absolute inset-0 z-0"></div>
                     <img src="${getOptimizedImageUrl(card.image)}" class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 relative z-10 opacity-0" onload="this.classList.remove('opacity-0');" loading="lazy">
                     <div class="absolute inset-0 z-20 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
@@ -370,6 +362,7 @@ function renderCards() {
         `;
         cardsHtml += html;
     });
+    currentFilteredCardIds = filtered.map(c => c.id);
     container.innerHTML = cardsHtml;
 }
 
@@ -498,7 +491,7 @@ function updateCartUI() {
         cart.forEach((item, index) => {
             cartHtml += `
                 <div class="bg-white rounded-xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] flex relative w-full p-2 gap-3 items-stretch hover:border-blue-100 transition-colors">
-                    <div class="relative w-[70px] shrink-0 bg-gray-100 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center" onclick="openCardModal(${item.id})">
+                    <div class="relative w-[70px] shrink-0 bg-gray-100 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center" onclick="openLightbox(${item.id})">
                         <img src="${getOptimizedImageUrl(item.image, 150)}" class="w-full h-full object-cover" loading="lazy">
                         ${item.badge ? `<span class="absolute top-1 left-1 bg-gray-900/90 text-white font-bold text-[7px] px-1.5 py-0.5 rounded-sm shadow-sm">${item.badge}</span>` : ''}
                     </div>
@@ -554,11 +547,11 @@ function updateCartUI() {
         
         if(lbBtn) {
             if(inCart) {
-                lbBtn.className = "w-full bg-yellow-400 text-gray-900 text-[13px] font-black px-4 py-3 rounded-xl shadow-[0_4px_20px_rgba(250,204,21,0.25)] transition tap-effect flex items-center justify-center gap-2";
-                lbBtn.innerHTML = `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> <span>อยู่ในตะกร้าแล้ว</span>`;
+                lbBtn.className = "w-full bg-yellow-400 text-gray-900 text-[13px] font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(250,204,21,0.25)] transition tap-effect flex items-center justify-center gap-2 mt-2";
+                lbBtn.innerHTML = `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> <span class="tracking-wide">อยู่ในตะกร้าแล้ว</span>`;
             } else {
-                lbBtn.className = "w-full bg-blue-600 text-white text-[13px] font-black px-4 py-3 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.35)] hover:bg-blue-500 transition tap-effect flex items-center justify-center gap-2";
-                lbBtn.innerHTML = `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg> <span>เพิ่มลงตะกร้าสินค้า</span>`;
+                lbBtn.className = "w-full bg-blue-600 text-white text-[13px] font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.35)] hover:bg-blue-500 transition tap-effect flex items-center justify-center gap-2 mt-2";
+                lbBtn.innerHTML = `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg> <span class="tracking-wide">เพิ่มลงตะกร้าสินค้า</span>`;
             }
         }
     });
@@ -692,13 +685,369 @@ function applyWatermark(imageSrc, callback) {
     initPanzoom();
 }
 
+function translateCategory(cat) {
+    if (!cat) return '';
+    const map = {
+        'Character': 'คาแรกเตอร์',
+        'Leader': 'ลีดเดอร์',
+        'Event': 'อีเวนต์',
+        'Stage': 'สเตจ'
+    };
+    return map[cat] || cat;
+}
+
+function translateColor(color) {
+    if (!color) return '';
+    const map = {
+        'red': 'แดง',
+        'green': 'เขียว',
+        'blue': 'น้ำเงิน',
+        'purple': 'ม่วง',
+        'black': 'ดำ',
+        'yellow': 'เหลือง',
+        'Red': 'แดง',
+        'Green': 'เขียว',
+        'Blue': 'น้ำเงิน',
+        'Purple': 'ม่วง',
+        'Black': 'ดำ',
+        'Yellow': 'เหลือง'
+    };
+    return map[color] || color;
+}
+
+function translateAttribute(attr) {
+    if (!attr) return '';
+    const map = {
+        'Strike': 'ตี',
+        'Slash': 'ฟัน',
+        'Special': 'พิเศษ',
+        'Wisdom': 'ปัญญา',
+        'Ranged': 'ยิง'
+    };
+    return map[attr] || attr;
+}
+
+function formatEffectText(text) {
+    if (!text) return '';
+    
+    // Replace [Keywords] with styled badges
+    return text.replace(/\[([^\]]+)\]/g, (match, keyword) => {
+        const kw = keyword.trim();
+        
+        if (kw === 'ทริกเกอร์' || kw.toLowerCase() === 'trigger') {
+            // Yellow badge for trigger
+            return `<span class="inline-flex items-center justify-center bg-yellow-400 text-gray-900 font-extrabold text-[10px] px-2 py-0.5 rounded mr-1 shadow-sm border border-yellow-500 uppercase tracking-wide">Trigger</span>`;
+        } else if (kw.startsWith('ดัง!!') || kw.toUpperCase().startsWith('DON!!')) {
+            // Gray/special badge for DON!!
+            return `<span class="inline-flex items-center justify-center bg-gray-700 text-yellow-400 font-black text-[9px] px-1.5 py-0.5 rounded border border-gray-600 mr-1 uppercase tracking-wider">${kw}</span>`;
+        } else {
+            // Orange diamond badge for effect keywords like บล็อกเกอร์, จู่โจมฉับพลัน, ดับเบิ้ลแอทแทค, Blocker, Rush, Double Attack, etc.
+            return `
+                <span class="diamond-badge-outer mr-1.5 my-0.5 align-middle">
+                    <span class="diamond-badge-inner">${kw}</span>
+                </span>
+            `;
+        }
+    });
+}
+
+const cardDetailsCache = {};
+
+async function fetchCardDetails(cardCode) {
+    if (!cardCode) return null;
+    if (cardDetailsCache[cardCode]) return cardDetailsCache[cardCode];
+    
+    const targetUrl = `https://onepiece.limitlesstcg.com/cards/${cardCode}`;
+    try {
+        let html = '';
+        // Try proxy 1
+        try {
+            const primaryUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
+            const response = await fetch(primaryUrl);
+            if (response.ok) html = await response.text();
+        } catch(e) {}
+        
+        // Try proxy 2
+        if (!html) {
+            const fallbackUrl = 'https://api.allorigins.win/get?url=';
+            const response = await fetch(fallbackUrl + encodeURIComponent(targetUrl));
+            if (response.ok) {
+                const data = await response.json();
+                html = data.contents;
+            }
+        }
+        
+        if (!html) return null;
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        const nameEl = doc.querySelector('.card-text-name a');
+        const name = nameEl ? nameEl.textContent.trim() : '';
+        
+        const categorySpan = doc.querySelector('.card-text-type span[data-tooltip="Category"]');
+        const category = categorySpan ? categorySpan.textContent.trim() : '';
+        
+        const colorSpan = doc.querySelector('.card-text-type span[data-tooltip="Color"]');
+        const color = colorSpan ? colorSpan.textContent.trim() : '';
+        
+        const typeText = doc.querySelector('.card-text-type') ? doc.querySelector('.card-text-type').textContent : '';
+        const costMatch = typeText.match(/(\d+)\s*Cost/i);
+        const cost = costMatch ? parseInt(costMatch[1]) : 0;
+        
+        const sectionTexts = Array.from(doc.querySelectorAll('.card-text-section')).map(el => el.textContent);
+        let power = 0;
+        let counter = 0;
+        
+        for (const text of sectionTexts) {
+            const powerMatch = text.match(/(\d+)\s*Power/i);
+            if (powerMatch) power = parseInt(powerMatch[1]);
+            
+            const counterMatch = text.match(/\+(\d+)\s*Counter/i) || text.match(/(\d+)\s*Counter/i);
+            if (counterMatch) counter = parseInt(counterMatch[1]);
+        }
+        
+        const attrSpan = doc.querySelector('.card-text-section span[data-tooltip="Attribute"]');
+        const attribute = attrSpan ? attrSpan.textContent.trim() : '';
+        
+        const traitSpan = doc.querySelector('.card-text-section span[data-tooltip="Type"]');
+        const traits = traitSpan ? traitSpan.textContent.trim() : '';
+        
+        const setSpan = doc.querySelector('.prints-current-details span.text-lg');
+        const setName = setSpan ? setSpan.textContent.trim().replace(/\s*\(.*\)\s*$/, '') : '';
+        
+        let effect = '';
+        const sections = doc.querySelectorAll('.card-text-section');
+        for (const sec of sections) {
+            if (!sec.querySelector('span[data-tooltip="Category"]') && 
+                !sec.querySelector('span[data-tooltip="Color"]') && 
+                !sec.textContent.includes('Illustrated by')) {
+                effect = sec.innerHTML.trim().replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+            }
+        }
+        
+        const details = {
+            name,
+            category,
+            color,
+            cost,
+            power,
+            attribute,
+            counter,
+            traits,
+            setName,
+            effect
+        };
+        
+        cardDetailsCache[cardCode] = details;
+        return details;
+    } catch(e) {
+        console.error("Error fetching card details from Limitless", e);
+        return null;
+    }
+}
+
+function renderLightboxCard(card) {
+    const img = document.getElementById('lightbox-img');
+    const details = document.getElementById('lightbox-details');
+    const imgContainer = document.getElementById('lightbox-img-container');
+    
+    // Add transitions dynamically
+    imgContainer.classList.add('lightbox-transition');
+    details.classList.add('lightbox-transition');
+    
+    img.src = getOptimizedImageUrl(card.image, 600);
+    applyWatermark(getOptimizedImageUrl(card.image, 600), function(watermarkedSrc) {
+        img.src = watermarkedSrc;
+    });
+    initPanzoom();
+    
+    const inCart = cart.some(i => i.id === card.id);
+    const btnClass = inCart 
+        ? "w-full bg-yellow-400 text-gray-900 text-[13px] font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(250,204,21,0.25)] transition tap-effect flex items-center justify-center gap-2 mt-2" 
+        : "w-full bg-blue-600 text-white text-[13px] font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.35)] hover:bg-blue-500 transition tap-effect flex items-center justify-center gap-2 mt-2";
+    const btnIcon = inCart 
+        ? `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>` 
+        : `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>`;
+    const btnText = inCart ? "อยู่ในตะกร้าแล้ว" : "เพิ่มลงตะกร้าสินค้า";
+
+    const hasDetailsInDb = card.cost !== undefined && card.category !== undefined;
+    const cardCode = card.set || '';
+    
+    const renderContent = (info) => {
+        const typeDisplay = translateCategory(info.category || card.rarity);
+        const colorDisplay = translateColor(info.color || card.color);
+        const attributeDisplay = translateAttribute(info.attribute);
+        const setCode = cardCode.split('-')[0] || '';
+        const setNameDisplay = info.setName ? `[${setCode}] ${info.setName}` : `[${setCode}]`;
+        const effectHtml = info.effect ? `
+            <div class="relative mt-5 mb-2">
+                <div class="absolute -top-3 left-3 bg-blue-600 text-white font-extrabold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded shadow-sm border border-blue-500 z-10">
+                    EFFECT
+                </div>
+                <div class="bg-gray-800/50 border border-gray-700/60 rounded-xl p-3 pt-4.5 text-gray-200 text-[11px] leading-relaxed whitespace-pre-line">
+                    ${formatEffectText(info.effect)}
+                </div>
+            </div>
+        ` : '';
+
+        return `
+            <div class="flex flex-col gap-3">
+                <!-- Header: Title & SKU -->
+                <div class="flex justify-between items-start gap-3">
+                    <div class="flex-grow">
+                        <span class="text-[10px] font-bold text-yellow-400 uppercase tracking-widest">${cardCode || card.rarity}</span>
+                        <h2 class="text-base font-black text-white leading-tight mt-0.5">${card.name}</h2>
+                    </div>
+                    <div class="text-right shrink-0 bg-gray-800/80 px-2.5 py-1 rounded-lg border border-gray-700">
+                        <span class="text-[8px] font-bold text-gray-400 uppercase block mb-0.5">รหัสสินค้า</span>
+                        <div class="text-[10px] font-extrabold text-gray-200 tracking-wider">${card.code}</div>
+                    </div>
+                </div>
+
+                <!-- Price and Add button -->
+                <div class="flex justify-between items-center gap-2 mt-1">
+                    <div>
+                        <span class="text-[9px] text-gray-500 uppercase font-bold block leading-none mb-1">ราคาขาย</span>
+                        <span class="text-xl font-black text-white tracking-tight leading-none">${formatPrice(card.price)}</span>
+                    </div>
+                    <div class="flex-grow max-w-[180px]">
+                        <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass} !my-0 !py-2.5 !text-xs">
+                            ${btnIcon} <span>${btnText}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card Game Effect Box -->
+                ${effectHtml}
+
+                <!-- Detailed Attributes Grid -->
+                <div class="bg-gray-950/40 rounded-xl border border-gray-800/50 p-3 mt-1">
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1 min-w-0">
+                            <span class="text-gray-500 font-bold shrink-0">ชื่อ:</span>
+                            <span class="font-extrabold text-gray-200 truncate ml-2 text-right">${card.name}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1 min-w-0">
+                            <span class="text-gray-500 font-bold shrink-0">รหัสการ์ด:</span>
+                            <span class="font-extrabold text-yellow-400 font-mono ml-2 text-right">${cardCode || '-'}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold">ประเภท:</span>
+                            <span class="font-extrabold text-gray-200">${typeDisplay || '-'}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold">ธีมสี:</span>
+                            <span class="font-extrabold text-gray-200">${colorDisplay || '-'}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold">คอสท์:</span>
+                            <span class="font-extrabold text-yellow-400 font-mono">${info.cost !== undefined ? info.cost : '-'}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold">คุณลักษณะ:</span>
+                            <span class="font-extrabold text-gray-200">${attributeDisplay || '-'}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold">พาวเวอร์:</span>
+                            <span class="font-extrabold text-gray-200 font-mono">${info.power || '-'}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold">เคาน์เตอร์:</span>
+                            <span class="font-extrabold text-gray-200 font-mono">${info.counter ? `+${info.counter}` : '-'}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold">ระดับ:</span>
+                            <span class="font-extrabold text-gray-200">${card.rarity || '-'}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold">รหัสชุด:</span>
+                            <span class="font-extrabold text-gray-200 font-mono">${setCode || '-'}</span>
+                        </div>
+                        <div class="col-span-2 flex justify-between border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold shrink-0">ชุด:</span>
+                            <span class="font-extrabold text-gray-200 truncate ml-2 text-right">${setNameDisplay || '-'}</span>
+                        </div>
+                        <div class="col-span-2 flex flex-col gap-0.5 border-b border-gray-800/40 pb-1">
+                            <span class="text-gray-500 font-bold">คุณสมบัติ:</span>
+                            <span class="font-extrabold text-gray-200 text-left break-words leading-relaxed">${info.traits || '-'}</span>
+                        </div>
+                        <div class="flex justify-between pb-0">
+                            <span class="text-gray-500 font-bold">หมวดหมู่:</span>
+                            <span class="font-extrabold text-gray-200">One Piece Card Game</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    if (hasDetailsInDb) {
+        details.innerHTML = renderContent(card);
+    } else {
+        const cached = cardDetailsCache[cardCode];
+        if (cached) {
+            details.innerHTML = renderContent(cached);
+        } else {
+            // Render basic card stats first
+            details.innerHTML = renderContent({
+                effect: card.effect || '',
+                category: card.category || '',
+                color: card.color || '',
+                cost: card.cost,
+                power: card.power,
+                attribute: card.attribute,
+                counter: card.counter,
+                traits: card.traits,
+                setName: card.setName,
+            });
+            
+            fetchCardDetails(cardCode).then(fetchedInfo => {
+                if (currentLightboxCardIndex !== -1 && currentLightboxCardIds[currentLightboxCardIndex] === card.id) {
+                    if (fetchedInfo) {
+                        const detailsContainer = document.getElementById('lightbox-details');
+                        detailsContainer.classList.add('lightbox-transition-hidden');
+                        setTimeout(() => {
+                            detailsContainer.innerHTML = renderContent(fetchedInfo);
+                            detailsContainer.classList.remove('lightbox-transition-hidden');
+                        }, 150);
+                    }
+                }
+            });
+        }
+    }
+}
+
+function changeLightboxCard(cardId) {
+    const imgContainer = document.getElementById('lightbox-img-container');
+    const details = document.getElementById('lightbox-details');
+    
+    imgContainer.classList.add('lightbox-transition-hidden');
+    details.classList.add('lightbox-transition-hidden');
+    
+    setTimeout(() => {
+        const card = cards.find(c => c.id == cardId);
+        if (card) {
+            renderLightboxCard(card);
+        }
+        
+        imgContainer.classList.remove('lightbox-transition-hidden');
+        details.classList.remove('lightbox-transition-hidden');
+    }, 200);
+}
+
 function openLightbox(idOrSrc) {
     openModalState();
     const lb = document.getElementById('lightbox');
     const img = document.getElementById('lightbox-img');
     const details = document.getElementById('lightbox-details');
+    const imgContainer = document.getElementById('lightbox-img-container');
     
-    // Hide gallery UI
+    // Add transition classes dynamically
+    if (imgContainer) imgContainer.classList.add('lightbox-transition');
+    if (details) details.classList.add('lightbox-transition');
+    
+    // Hide gallery UI initially
     document.getElementById('lightbox-prev').classList.add('hidden');
     document.getElementById('lightbox-next').classList.add('hidden');
     document.getElementById('lightbox-counter').classList.add('hidden');
@@ -709,80 +1058,30 @@ function openLightbox(idOrSrc) {
     
     if (card) {
         // Mode 1: Trading Card
-        img.src = getOptimizedImageUrl(card.image, 600);
-        applyWatermark(getOptimizedImageUrl(card.image, 600), function(watermarkedSrc) {
-            img.src = watermarkedSrc;
-        });
-        initPanzoom();
-        
-        const inCart = cart.some(i => i.id === card.id);
-        const btnClass = inCart 
-            ? "w-full bg-yellow-400 text-gray-900 text-[13px] font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(250,204,21,0.25)] transition tap-effect flex items-center justify-center gap-2 mt-2" 
-            : "w-full bg-blue-600 text-white text-[13px] font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.35)] hover:bg-blue-500 transition tap-effect flex items-center justify-center gap-2 mt-2";
-        const btnIcon = inCart 
-            ? `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>` 
-            : `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>`;
-        const btnText = inCart ? "อยู่ในตะกร้าแล้ว" : "เพิ่มลงตะกร้าสินค้า";
-
-        let colorMap = {
-            'red': 'bg-red-500',
-            'blue': 'bg-blue-500',
-            'green': 'bg-green-500',
-            'purple': 'bg-purple-500',
-            'black': 'bg-gray-800',
-            'yellow': 'bg-yellow-400',
-            'multi': 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500'
-        };
-        let colorDot = card.color ? `<div class="w-3 h-3 rounded-full ${colorMap[card.color.toLowerCase()] || 'bg-gray-400'} shadow-sm border border-gray-600 shrink-0"></div>` : '';
-
-        let setDisplay = `<span class="text-blue-400">${card.set || '-'}</span>`;
-        if (card.set && card.set.includes(' · ')) {
-            const parts = card.set.split(' · ');
-            setDisplay = `<span class="text-blue-400">${parts[0]}</span> <span class="text-gray-400 font-medium">· ${parts.slice(1).join(' · ')}</span>`;
-        } else if (card.rarity) {
-            setDisplay = `<span class="text-blue-400">${card.set || '-'}</span> <span class="text-gray-400 font-medium">· ${card.rarity}</span>`;
+        currentLightboxCardIds = currentFilteredCardIds.length > 0 ? currentFilteredCardIds : [card.id];
+        currentLightboxCardIndex = currentLightboxCardIds.indexOf(card.id);
+        if (currentLightboxCardIndex === -1) {
+            currentLightboxCardIds = [card.id];
+            currentLightboxCardIndex = 0;
         }
-
-        details.innerHTML = `
-            <div class="flex flex-col gap-3">
-                <!-- Header: Name -->
-                <div>
-                    <h2 class="text-2xl font-black text-white leading-tight line-clamp-1">${card.name}</h2>
-                    <div class="font-bold text-[14px] tracking-wide uppercase flex items-center gap-2 mt-1.5">
-                        ${colorDot}
-                        ${setDisplay}
-                    </div>
-                </div>
-
-                <!-- Price, SKU, Badges -->
-                <div class="flex flex-wrap items-center gap-2 mt-1">
-                    <span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-md border border-green-400/20 font-extrabold text-lg shadow-sm">${formatPrice(card.price)}</span>
-                    ${card.code ? `
-                    <span class="text-gray-300 bg-gray-800 px-2.5 py-1.5 rounded-md text-[13px] font-semibold border border-gray-700 flex items-center gap-1.5">
-                        <span class="text-gray-500 font-black">#</span> ${card.code}
-                    </span>` : ''}
-                    ${card.badge ? `
-                    <span class="text-yellow-400 bg-yellow-400/10 px-2.5 py-1.5 rounded-md text-[13px] font-bold border border-yellow-400/20">
-                        ${card.badge}
-                    </span>` : ''}
-                </div>
-
-                ${card.effect ? `
-                <div class="bg-white/5 rounded-lg border border-white/10 p-3 mt-1">
-                    <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-1.5">ความสามารถ (Effect)</span>
-                    <p class="text-xs text-gray-300 leading-relaxed font-medium whitespace-pre-line">${card.effect}</p>
-                </div>
-                ` : ''}
-
-                <!-- Action Button -->
-                <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass} mt-1">
-                    ${btnIcon} <span>${btnText}</span>
-                </button>
-            </div>
-        `;
+        
+        // Show navigation arrows if there are more cards
+        const prevBtn = document.getElementById('lightbox-prev');
+        const nextBtn = document.getElementById('lightbox-next');
+        if (currentLightboxCardIds.length > 1) {
+            prevBtn.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+        } else {
+            prevBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+        }
+        
+        renderLightboxCard(card);
         details.classList.remove('hidden');
-    } else if (typeof idOrSrc === 'string') {
+    } else if (typeof idOrSrc === 'string' && idOrSrc.startsWith('data:image')) {
         // Mode 2: Credit Review Image (Base64)
+        currentLightboxCardIndex = -1;
+        currentLightboxCardIds = [];
         img.src = idOrSrc;
         details.innerHTML = '';
         details.classList.add('hidden');
@@ -794,7 +1093,6 @@ function openLightbox(idOrSrc) {
     // trigger reflow
     void lb.offsetWidth;
     lb.classList.remove('opacity-0');
-    document.body.style.overflow = 'hidden';
 }
 
 function closeLightbox(e) {
@@ -803,19 +1101,28 @@ function closeLightbox(e) {
         e.stopPropagation();
     }
     closeModalState();
+    
+    currentLightboxCardIndex = -1;
+    currentLightboxCardIds = [];
+    
     const lb = document.getElementById('lightbox');
     lb.classList.add('opacity-0');
     
-    // Only restore overflow if no other modals are open
-    if (document.getElementById('card-modal') && document.getElementById('card-modal').classList.contains('hidden') && 
-        document.getElementById('bulk-search-modal').classList.contains('hidden') && 
-        document.getElementById('contact-modal').classList.contains('hidden')) {
-        document.body.style.overflow = '';
+    // If swipe close was triggered, the container might still have translation/scale styles
+    const container = document.getElementById('lightbox-container');
+    if (container) {
+        container.style.transition = 'transform 0.3s ease';
+        container.style.transform = 'translateY(100%) scale(0.9)';
     }
     
     setTimeout(() => {
         lb.classList.add('hidden');
         document.getElementById('lightbox-img').src = '';
+        if (container) {
+            container.style.transform = '';
+            container.style.transition = '';
+        }
+        lb.style.backgroundColor = '';
     }, 300);
 }
 
@@ -961,11 +1268,25 @@ function navigateLightbox(direction, event) {
         event.stopPropagation();
     }
     
+    // Check if we are currently displaying a card
+    if (currentLightboxCardIndex !== -1) {
+        if (currentLightboxCardIds.length <= 1) return;
+        
+        currentLightboxCardIndex += direction;
+        if (currentLightboxCardIndex < 0) {
+            currentLightboxCardIndex = currentLightboxCardIds.length - 1;
+        } else if (currentLightboxCardIndex >= currentLightboxCardIds.length) {
+            currentLightboxCardIndex = 0;
+        }
+        
+        changeLightboxCard(currentLightboxCardIds[currentLightboxCardIndex]);
+        return;
+    }
+    
+    // Default credit reviews gallery navigation
     if (currentLightboxImages.length <= 1) return;
     
     currentLightboxIndex += direction;
-    
-    // Wrap around
     if (currentLightboxIndex < 0) {
         currentLightboxIndex = currentLightboxImages.length - 1;
     } else if (currentLightboxIndex >= currentLightboxImages.length) {
@@ -975,39 +1296,119 @@ function navigateLightbox(direction, event) {
     updateLightboxGalleryUI();
 }
 
-// Add swipe support to lightbox
-let touchstartX = 0;
-let touchendX = 0;
-document.addEventListener('DOMContentLoaded', () => {
-    const lightboxImgContainer = document.getElementById('lightbox-img-container');
-    if (lightboxImgContainer) {
-        lightboxImgContainer.addEventListener('touchstart', e => {
-            touchstartX = e.changedTouches[0].screenX;
-        }, {passive: true});
+// Unified touch handlers for Lightbox swipe navigation and close gestures
+let dragStartX = 0;
+let dragStartY = 0;
+let dragTranslateY = 0;
+let dragTranslateX = 0;
+let isDragging = false;
+let dragDirection = null; // 'horizontal' or 'vertical'
 
-        lightboxImgContainer.addEventListener('touchend', e => {
-            touchendX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, {passive: true});
-    }
-});
-
-function handleSwipe() {
-    const swipeThreshold = 50;
-    if (typeof lightboxPanzoom !== 'undefined' && lightboxPanzoom && lightboxPanzoom.getScale() > 1.05) return;
-    if (touchendX < touchstartX - swipeThreshold) {
-        // Swiped left, go next
-        if (!document.getElementById('lightbox').classList.contains('hidden')) {
-            navigateLightbox(1);
+function initLightboxGestures() {
+    const container = document.getElementById('lightbox-container');
+    const lightbox = document.getElementById('lightbox');
+    if (!container || !lightbox) return;
+    
+    container.addEventListener('touchstart', e => {
+        if (typeof lightboxPanzoom !== 'undefined' && lightboxPanzoom && lightboxPanzoom.getScale() > 1.05) {
+            isDragging = false;
+            return;
         }
-    }
-    if (touchendX > touchstartX + swipeThreshold) {
-        // Swiped right, go prev
-        if (!document.getElementById('lightbox').classList.contains('hidden')) {
-            navigateLightbox(-1);
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        dragTranslateX = 0;
+        dragTranslateY = 0;
+        isDragging = true;
+        dragDirection = null;
+        container.style.transition = 'none';
+    }, {passive: true});
+    
+    container.addEventListener('touchmove', e => {
+        if (!isDragging) return;
+        if (typeof lightboxPanzoom !== 'undefined' && lightboxPanzoom && lightboxPanzoom.getScale() > 1.05) return;
+        
+        const moveX = e.touches[0].clientX;
+        const moveY = e.touches[0].clientY;
+        const diffX = moveX - dragStartX;
+        const diffY = moveY - dragStartY;
+        
+        // Detect swipe direction on first drag move
+        if (dragDirection === null) {
+            if (Math.abs(diffY) > 8 && Math.abs(diffY) > Math.abs(diffX)) {
+                dragDirection = 'vertical';
+            } else if (Math.abs(diffX) > 8 && Math.abs(diffX) > Math.abs(diffY)) {
+                dragDirection = 'horizontal';
+            }
         }
-    }
+        
+        if (dragDirection === 'vertical') {
+            // Drag down to close gesture
+            if (diffY > 0) { // Only drag down
+                dragTranslateY = diffY;
+                const scale = Math.max(0.8, 1 - (diffY / 1500));
+                container.style.transform = `translateY(${diffY}px) scale(${scale})`;
+                
+                const bgOpacity = Math.max(0.4, 0.95 - (diffY / 600));
+                lightbox.style.backgroundColor = `rgba(0, 0, 0, ${bgOpacity})`;
+            }
+        } else if (dragDirection === 'horizontal') {
+            // Swipe left/right for next/prev card
+            dragTranslateX = diffX;
+            // Let the card slide slightly during drag for visual response
+            container.style.transform = `translateX(${diffX * 0.4}px)`;
+        }
+    }, {passive: true});
+    
+    container.addEventListener('touchend', e => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        container.style.transition = 'transform 0.22s cubic-bezier(0.25, 0.8, 0.25, 1)';
+        
+        if (dragDirection === 'vertical') {
+            if (dragTranslateY > 120) {
+                // Swipe down far enough -> close lightbox
+                container.style.transform = 'translateY(100%) scale(0.85)';
+                lightbox.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+                lightbox.classList.add('opacity-0');
+                
+                setTimeout(() => {
+                    closeLightbox();
+                    container.style.transform = '';
+                    lightbox.style.backgroundColor = '';
+                    lightbox.classList.remove('opacity-0');
+                }, 220);
+            } else {
+                // Snap back
+                container.style.transform = '';
+                lightbox.style.backgroundColor = '';
+            }
+        } else if (dragDirection === 'horizontal') {
+            const swipeThreshold = 60;
+            if (dragTranslateX < -swipeThreshold) {
+                // Swipe left -> next card/image
+                navigateLightbox(1);
+            } else if (dragTranslateX > swipeThreshold) {
+                // Swipe right -> prev card/image
+                navigateLightbox(-1);
+            } else {
+                // Snap back
+                container.style.transform = '';
+            }
+            
+            // Clean up translate style since navigateLightbox will update card or we snapped back
+            setTimeout(() => {
+                if (!isDragging) container.style.transform = '';
+            }, 220);
+        }
+        
+        dragDirection = null;
+    }, {passive: true});
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    initLightboxGestures();
+});
 
 // Check Credit Feature
 function toggleCreditModal() {
@@ -1516,212 +1917,4 @@ function copyOrderCode() {
     }
 }
 
-
-
-let currentCardModalId = null;
-
-function openCardModal(id) {
-    const card = cards.find(c => c.id == id);
-    if (!card) return;
-    
-    currentCardModalId = id;
-    openModalState();
-    
-    const modal = document.getElementById('card-modal');
-    
-    // Set image
-    document.getElementById('cm-img').src = getOptimizedImageUrl(card.image, 600);
-    
-    // Set text
-    document.getElementById('cm-name').textContent = card.name || '';
-    
-    // Color dot
-    let colorMap = {
-        'red': { bg: 'bg-red-500', text: 'สีแดง' },
-        'blue': { bg: 'bg-blue-500', text: 'สีฟ้า' },
-        'green': { bg: 'bg-green-500', text: 'สีเขียว' },
-        'purple': { bg: 'bg-purple-500', text: 'สีม่วง' },
-        'black': { bg: 'bg-gray-800', text: 'สีดำ' },
-        'yellow': { bg: 'bg-yellow-400 text-gray-900', text: 'สีเหลือง' },
-        'multi': { bg: 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500', text: 'หลายสี' }
-    };
-    let cInfo = card.color ? colorMap[card.color.toLowerCase()] : null;
-    document.getElementById('cm-colordot').innerHTML = cInfo ? `<div class="px-2 py-0.5 rounded-full ${cInfo.bg} text-[10px] font-bold border border-white/20 shrink-0 ${cInfo.bg.includes('text-gray') ? '' : 'text-white'}">${cInfo.text}</div>` : '';
-    
-    // Set / Rarity
-    let setDisplay = card.set || '-';
-    if (card.set && card.set.includes(' · ')) {
-        const parts = card.set.split(' · ');
-        setDisplay = `${parts[0]} · ${parts.slice(1).join(' · ')}`;
-    } else if (card.rarity) {
-        setDisplay = `${card.set || '-'} · ${card.rarity}`;
-    }
-    document.getElementById('cm-set-rarity').textContent = setDisplay;
-    
-    // Price
-    document.getElementById('cm-price').textContent = formatPrice(card.price);
-    
-    // Button
-    const inCart = cart.some(i => i.id === card.id);
-    const btnContainer = document.getElementById('cm-btn-container');
-    
-    const btnClass = inCart 
-        ? "w-full bg-yellow-400 text-gray-900 text-[13px] font-black px-4 py-3 rounded-xl shadow-[0_4px_20px_rgba(250,204,21,0.25)] transition tap-effect flex items-center justify-center gap-2" 
-        : "w-full bg-blue-600 text-white text-[13px] font-black px-4 py-3 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.35)] hover:bg-blue-500 transition tap-effect flex items-center justify-center gap-2";
-    const btnIcon = inCart 
-        ? `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>` 
-        : `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>`;
-    const btnText = inCart ? "อยู่ในตะกร้าแล้ว" : "เพิ่มลงตะกร้าสินค้า";
-    
-    btnContainer.innerHTML = `<button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass}">${btnIcon} <span>${btnText}</span></button>`;
-    
-    // Effect
-    const effectContainer = document.getElementById('cm-effect');
-    if (card.effect && card.effect.trim() !== '') {
-        let text = card.effect;
-        // Parse triggers
-        let formattedLines = [];
-        let paragraphs = text.split('\n').filter(p => p.trim() !== '');
-        
-        paragraphs.forEach(p => {
-            if (p.startsWith('[ทริกเกอร์]')) {
-                let rest = p.substring(10).trim();
-                // We format the trigger specially
-                formattedLines.push(`
-                    <div class="relative bg-[#0b131e] border border-yellow-400/30 rounded-lg p-3 pt-6 mt-6 mb-3 shadow-md">
-                        <div class="absolute -top-3 -left-1 bg-yellow-400 text-black px-3 py-1 font-black text-xs tracking-wider slanted-badge shadow-sm border-b-2 border-yellow-500">ทริกเกอร์</div>
-                        <span class="text-yellow-100 leading-relaxed">${formatEffectKeywords(rest)}</span>
-                    </div>
-                `);
-            } else {
-                formattedLines.push(`<div class="mb-3 leading-relaxed">${formatEffectKeywords(p)}</div>`);
-            }
-        });
-        
-        effectContainer.innerHTML = formattedLines.join('');
-        effectContainer.parentElement.classList.remove('hidden');
-    } else {
-        effectContainer.parentElement.classList.add('hidden');
-    }
-    
-    // Show Modal
-    modal.classList.remove('hidden');
-    void modal.offsetWidth; // trigger reflow
-    modal.classList.remove('opacity-0');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeCardModal() {
-    closeModalState();
-    const modal = document.getElementById('card-modal');
-    modal.classList.add('opacity-0');
-    setTimeout(() => {
-        modal.classList.add('hidden');
-        if (document.getElementById('lightbox').classList.contains('hidden') && document.getElementById('cart-sidebar') === null && document.getElementById('bulk-search-modal').classList.contains('hidden') && document.getElementById('contact-modal').classList.contains('hidden')) {
-            document.body.style.overflow = '';
-        }
-    }, 300);
-}
-
-function openZoomModal() {
-    const src = document.getElementById('cm-img').src;
-    if (src) {
-        openLightbox(src);
-    }
-}
-
-function formatEffectKeywords(text) {
-    if (!text) return '';
-    // Replace [Word] with blue badge
-    return text.replace(/\[(.*?)\]/g, (match, p1) => {
-        return `<span class="bg-blue-600 text-white px-1.5 py-0.5 rounded text-[10px] font-bold inline-block mx-0.5">${p1}</span>`;
-    });
-}
-
-// Swipe navigation and dismiss for Card Modal
-document.addEventListener('DOMContentLoaded', () => {
-    const cardModal = document.getElementById('card-modal');
-    if (!cardModal) return;
-    
-    // We bind touch events to the inner container
-    const innerModal = cardModal.querySelector('.bg-gray-900.max-w-md') || cardModal.querySelector('.max-w-md');
-    if (!innerModal) return;
-    
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let currentX = 0;
-    let currentY = 0;
-    let isDragging = false;
-    let direction = null; // 'horizontal' or 'vertical'
-    
-    innerModal.addEventListener('touchstart', (e) => {
-        // Don't drag if they are scrolling the effect box
-        const scrollable = e.target.closest('.overflow-y-auto');
-        if (scrollable && scrollable.scrollTop > 0) return;
-        
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        isDragging = true;
-        direction = null;
-        innerModal.style.transition = 'none';
-    }, {passive: true});
-    
-    innerModal.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        
-        currentX = e.touches[0].clientX - touchStartX;
-        currentY = e.touches[0].clientY - touchStartY;
-        
-        if (!direction) {
-            if (Math.abs(currentX) > Math.abs(currentY)) {
-                direction = 'horizontal';
-            } else {
-                direction = 'vertical';
-            }
-        }
-        
-        if (direction === 'vertical' && currentY > 0) {
-            // Drag down to close
-            const scale = Math.max(0.8, 1 - (currentY / 1500));
-            innerModal.style.transform = `translateY(${currentY}px) scale(${scale})`;
-            e.preventDefault(); // prevent pull to refresh
-        } else if (direction === 'horizontal') {
-            // Drag left/right to navigate
-            innerModal.style.transform = `translateX(${currentX}px)`;
-            e.preventDefault();
-        }
-    }, {passive: false});
-    
-    innerModal.addEventListener('touchend', (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        innerModal.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-        
-        if (direction === 'vertical') {
-            if (currentY > 120) {
-                closeCardModal();
-            } else {
-                innerModal.style.transform = '';
-            }
-        } else if (direction === 'horizontal') {
-            if (Math.abs(currentX) > 80 && typeof currentFilteredCards !== 'undefined' && currentFilteredCards.length > 0) {
-                // Find current index
-                const currentIndex = currentFilteredCards.findIndex(c => c.id == currentCardModalId);
-                if (currentIndex !== -1) {
-                    if (currentX < -80 && currentIndex < currentFilteredCards.length - 1) {
-                        // Swipe left -> Next card
-                        openCardModal(currentFilteredCards[currentIndex + 1].id);
-                    } else if (currentX > 80 && currentIndex > 0) {
-                        // Swipe right -> Prev card
-                        openCardModal(currentFilteredCards[currentIndex - 1].id);
-                    }
-                }
-            }
-            innerModal.style.transform = '';
-        }
-        
-        currentX = 0;
-        currentY = 0;
-    });
-});
 

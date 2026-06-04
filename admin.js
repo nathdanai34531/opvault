@@ -111,17 +111,11 @@ function getOptimizedImageUrl(url, width = 300) {
     
     try {
         const urlObj = new URL(url);
-        // If it's already using wsrv.nl proxy, don't double proxy it, just return it as is or modify width
-        if (urlObj.hostname.includes('wsrv.nl')) {
-            return url;
-        }
-        
         if (urlObj.hostname.includes('onepiece-cardgame.com') || urlObj.hostname.includes('limitlesstcg')) {
-            return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp`;
+            return `https://wsrv.nl/?url=${urlObj.hostname}${urlObj.pathname}&w=${width}&output=webp`;
         }
     } catch(e) {}
     
-    // Fallback to Jetpack Photon which is also extremely fast
     const cleanUrl = url.replace(/^https?:\/\//, '');
     return `https://i2.wp.com/${cleanUrl}?w=${width}&quality=80&strip=all`;
 }
@@ -472,7 +466,7 @@ function updateImagePreview() {
     const previewImg = document.getElementById('card-image-preview');
     
     if (url && url.trim() !== '') {
-        previewImg.src = getOptimizedImageUrl(url, 300);
+        previewImg.src = url;
         previewContainer.classList.remove('hidden');
     } else {
         previewImg.src = '';
@@ -480,53 +474,37 @@ function updateImagePreview() {
     }
 }
 
-async function translateToThai(text) {
-    if (!text) return '';
-    try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=th&dt=t&q=${encodeURIComponent(text)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data && data[0]) {
-            return data[0].map(item => item[0]).join('');
-        }
-        return text;
-    } catch(e) {
-        console.error('Translation error:', e);
-        return text;
-    }
-}
-
 async function autoFetchCardData() {
     const cardSetInput = document.getElementById('card-set');
-    const cardCode = cardSetInput.value.trim().toUpperCase();
-    if (!cardCode) {
+    const cardId = cardSetInput.value.trim().toUpperCase();
+    if (!cardId) {
         alert("กรุณากรอกรหัสการ์ด (Card Code) ก่อนดึงข้อมูล");
         return;
     }
-    
-    const status = document.getElementById('fetch-status');
+
     const btn = document.getElementById('btn-fetch-data');
+    const status = document.getElementById('fetch-status');
     const originalBtnText = btn.innerHTML;
-    
-    status.innerHTML = `<span class="text-blue-600 font-medium">กำลังค้นหาข้อมูล ${cardCode}...</span>`;
-    status.classList.remove('hidden', 'text-red-500', 'text-green-500');
-    status.classList.add('text-blue-600');
     
     btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>กำลังดึง...</span>`;
     btn.disabled = true;
-    
+    status.classList.remove('hidden');
+    status.classList.remove('text-red-500', 'text-green-500');
+    status.classList.add('text-gray-500');
+    status.textContent = "กำลังเชื่อมต่อฐานข้อมูล...";
+
     try {
-        const targetUrl = 'https://asia-th.onepiece-cardgame.com/cardlist/?freewords=' + encodeURIComponent(cardCode);
-        const primaryUrl = 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(targetUrl);
-        
+        const targetUrl = `https://onepiece.limitlesstcg.com/cards/${cardId}`;
         let html = '';
+
         try {
+            const primaryUrl = `https://api.codetabs.com/v1/proxy/?quest=${targetUrl}`;
             const response = await fetch(primaryUrl);
             if (response.ok) {
                 html = await response.text();
             }
         } catch (e) {
-            console.warn("Proxy failed, trying fallback...");
+            console.warn("Codetabs proxy failed, trying fallback...");
         }
 
         if (!html) {
@@ -537,86 +515,114 @@ async function autoFetchCardData() {
             html = data.contents;
         }
         
+        if (!html || html.includes('<title>Page not found') || html.includes('Page Not Found') || html.includes('<title>Limitless</title>')) {
+             throw new Error('ไม่พบรหัสการ์ดนี้ในระบบ LimitlessTCG');
+        }
+
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        let cardEl = doc.getElementById(cardCode);
-        if (!cardEl) {
-            cardEl = doc.querySelector('.modalCol');
-        }
-
-        if (!cardEl) {
-             throw new Error('ไม่พบรหัสการ์ดนี้ในระบบ Official Thai Site');
-        }
-
-        const nameEl = cardEl.querySelector('.cardName');
-        const cardName = nameEl ? nameEl.textContent.trim() : '';
-
-        const infoSpans = cardEl.querySelectorAll('.infoCol span');
-        let cardRarity = '';
-        if (infoSpans.length >= 2) {
-            cardRarity = infoSpans[1].textContent.trim();
-        }
-
-        const imgEl = cardEl.querySelector('.frontCol img');
-        let imageUrl = imgEl ? (imgEl.getAttribute('data-src') || imgEl.getAttribute('src')) : '';
-        if (imageUrl) {
-            if (imageUrl.startsWith('..')) {
-                imageUrl = imageUrl.replace('..', 'https://asia-th.onepiece-cardgame.com');
-            } else if (imageUrl.startsWith('/')) {
-                imageUrl = 'https://asia-th.onepiece-cardgame.com' + imageUrl;
+        // Extract Name
+        const nameEl = doc.querySelector('.card-text-name a');
+        let cardName = nameEl ? nameEl.textContent.trim() : '';
+        if(!cardName) {
+            const ogTitle = doc.querySelector('meta[property="og:title"]');
+            if(ogTitle) {
+                 const content = ogTitle.getAttribute('content');
+                 cardName = content ? content.split('(')[0].trim() : '';
             }
-            // Use wsrv.nl proxy to bypass CORS/Same-Site restrictions for images
-            imageUrl = 'https://wsrv.nl/?url=' + encodeURIComponent(imageUrl);
         }
 
-        const colorEl = cardEl.querySelector('.color');
-        let rawColor = colorEl ? colorEl.textContent.replace('ธีมสี', '').trim() : '';
-        let cardColor = '';
-        if (rawColor.includes('/')) {
-            cardColor = 'multi';
-        } else {
-            if (rawColor.includes('แดง')) cardColor = 'red';
-            else if (rawColor.includes('เขียว')) cardColor = 'green';
-            else if (rawColor.includes('ฟ้า')) cardColor = 'blue';
-            else if (rawColor.includes('ม่วง')) cardColor = 'purple';
-            else if (rawColor.includes('ดำ')) cardColor = 'black';
-            else if (rawColor.includes('เหลือง')) cardColor = 'yellow';
+        // Extract Image
+        const imgEl = doc.querySelector('meta[property="og:image"]');
+        let imageUrl = imgEl ? imgEl.getAttribute('content') : '';
+        if (imageUrl && !imageUrl.startsWith('http')) {
+            imageUrl = 'https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com' + imageUrl;
+        }
+
+        // Extract Color
+        const colorSpan = doc.querySelector('.card-text-type span[data-tooltip="Color"]');
+        let cardColor = colorSpan ? colorSpan.textContent.trim().toLowerCase() : '';
+
+        // Extract Category for Rarity fallback
+        const categorySpan = doc.querySelector('.card-text-type span[data-tooltip="Category"]');
+        let cardCategory = categorySpan ? categorySpan.textContent.trim() : '';
+        
+        // Extract Cost
+        const typeText = doc.querySelector('.card-text-type') ? doc.querySelector('.card-text-type').textContent : '';
+        const costMatch = typeText.match(/(\d+)\s*Cost/i);
+        const cardCost = costMatch ? costMatch[1] : '0';
+        
+        // Extract Power and Counter
+        const sectionTexts = Array.from(doc.querySelectorAll('.card-text-section')).map(el => el.textContent);
+        let cardPower = '0';
+        let cardCounter = '0';
+        for (const text of sectionTexts) {
+            const powerMatch = text.match(/(\d+)\s*Power/i);
+            if (powerMatch) cardPower = powerMatch[1];
+            const counterMatch = text.match(/\+(\d+)\s*Counter/i) || text.match(/(\d+)\s*Counter/i);
+            if (counterMatch) cardCounter = counterMatch[1];
         }
         
+        // Extract Attribute
+        const attrSpan = doc.querySelector('.card-text-section span[data-tooltip="Attribute"]');
+        const cardAttribute = attrSpan ? attrSpan.textContent.trim() : '';
+        
+        // Extract Traits
+        const traitSpan = doc.querySelector('.card-text-section span[data-tooltip="Type"]');
+        const cardTraits = traitSpan ? traitSpan.textContent.trim() : '';
+        
+        // Extract Set Name
+        const setSpan = doc.querySelector('.prints-current-details span.text-lg');
+        const cardSetName = setSpan ? setSpan.textContent.trim().replace(/\s*\(.*\)\s*$/, '') : '';
+        
+        // Extract Effect text
+        let cardEffect = '';
+        const sections = doc.querySelectorAll('.card-text-section');
+        for (const sec of sections) {
+            if (!sec.querySelector('span[data-tooltip="Category"]') && 
+                !sec.querySelector('span[data-tooltip="Color"]') && 
+                !sec.textContent.includes('Illustrated by')) {
+                cardEffect = sec.innerHTML.trim().replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+            }
+        }
+        
+        // Populate Form
         if(cardName) document.getElementById('card-name').value = cardName;
         if(imageUrl) {
             document.getElementById('card-image').value = imageUrl;
             updateImagePreview();
         }
-
-        if (cardRarity) {
-            document.getElementById('card-rarity').value = cardRarity;
-        }
-
-        const textEl = cardEl.querySelector('.text');
-        let effectText = '';
-        if (textEl) {
-            const clone = textEl.cloneNode(true);
-            const h3 = clone.querySelector('h3');
-            if (h3) h3.remove();
-            effectText = clone.innerHTML.replace(/<br\s*\/?>/gi, '\n');
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = effectText;
-            effectText = tempDiv.textContent.trim();
+        
+        if (cardCategory === 'Leader') {
+            document.getElementById('card-rarity').value = 'Leader';
+        } else {
+            // Force user to select rarity since LimitlessTCG doesn't provide it clearly
+            document.getElementById('card-rarity').value = '';
         }
         
-        if (effectText) {
-            document.getElementById('card-effect').value = effectText;
-        } else {
-            document.getElementById('card-effect').value = '';
+        if(cardColor) {
+            const colorSelect = document.getElementById('card-color');
+            const options = Array.from(colorSelect.options).map(o => o.value);
+            // check if exact match
+            if(options.includes(cardColor)) {
+                colorSelect.value = cardColor;
+            } else if (cardColor.includes('/')) {
+                // Multi-color, for now just pick the first color
+                const firstColor = cardColor.split('/')[0];
+                if(options.includes(firstColor)) colorSelect.value = firstColor;
+            }
         }
-
-        const colorSelect = document.getElementById('card-color');
-        const options = Array.from(colorSelect.options).map(o => o.value);
-        if(options.includes(cardColor)) {
-            colorSelect.value = cardColor;
-        }
+        
+        // Populate the new card detail inputs
+        if(cardCategory) document.getElementById('card-category').value = cardCategory;
+        document.getElementById('card-attribute').value = cardAttribute;
+        document.getElementById('card-cost').value = cardCost;
+        document.getElementById('card-power').value = cardPower;
+        document.getElementById('card-counter').value = cardCounter;
+        document.getElementById('card-traits').value = cardTraits;
+        document.getElementById('card-set-name').value = cardSetName;
+        document.getElementById('card-effect').value = cardEffect;
 
         status.textContent = "✅ ดึงข้อมูลสำเร็จ!";
         status.classList.remove('text-gray-500');
@@ -643,7 +649,6 @@ function openAddModal() {
     const status = document.getElementById('fetch-status');
     if(status) status.classList.add('hidden');
     document.getElementById('card-image-base64').value = '';
-    document.getElementById('card-effect').value = '';
     
     // Reset image preview
     const previewContainer = document.getElementById('image-preview-container');
@@ -674,7 +679,14 @@ function saveCard() {
         color: document.getElementById('card-color').value,
         set: document.getElementById('card-set').value,
         badge: document.getElementById('card-badge').value,
-        effect: document.getElementById('card-effect').value.trim()
+        effect: document.getElementById('card-effect').value,
+        cost: parseInt(document.getElementById('card-cost').value) || 0,
+        power: parseInt(document.getElementById('card-power').value) || 0,
+        counter: parseInt(document.getElementById('card-counter').value) || 0,
+        attribute: document.getElementById('card-attribute').value,
+        traits: document.getElementById('card-traits').value,
+        setName: document.getElementById('card-set-name').value,
+        category: document.getElementById('card-category').value
     };
     
     if(!newCard.name || isNaN(newCard.price) || !newCard.image) {
@@ -701,8 +713,6 @@ function saveCard() {
     closeAddModal();
 }
 
-
-
 function editCard(id) {
     const card = cards.find(c => c.id == id);
     if(card) {
@@ -714,7 +724,16 @@ function editCard(id) {
         document.getElementById('card-color').value = card.color;
         document.getElementById('card-set').value = card.set || '';
         document.getElementById('card-badge').value = card.badge || '';
+        
+        // Load the new card details fields
         document.getElementById('card-effect').value = card.effect || '';
+        document.getElementById('card-cost').value = card.cost !== undefined ? card.cost : '';
+        document.getElementById('card-power').value = card.power !== undefined ? card.power : '';
+        document.getElementById('card-counter').value = card.counter !== undefined ? card.counter : '';
+        document.getElementById('card-attribute').value = card.attribute || '';
+        document.getElementById('card-traits').value = card.traits || '';
+        document.getElementById('card-set-name').value = card.setName || '';
+        document.getElementById('card-category').value = card.category || 'Character';
         
         updateImagePreview();
         

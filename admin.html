@@ -338,7 +338,7 @@
                                 <option value="Manga">Manga</option>
                                 <option value="SEC">SEC / AA</option>
                                 <option value="SR">SR</option>
-                                <option value="L">L</option>
+                                <option value="Leader">Leader</option>
                                 <option value="R">R</option>
                                 <option value="UC">UC</option>
                                 <option value="C">C</option>
@@ -365,10 +365,70 @@
                             class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">ความสามารถ (Effect)</label>
-                        <textarea id="card-effect" rows="3" placeholder="[DON!! x1] [When Attacking] ..."
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none resize-y"></textarea>
+                    <!-- Extra details (Effect, Cost, Power, Counter, Attribute, Traits, Set Name, Category) -->
+                    <div class="border-t border-gray-100 pt-4 mt-4 space-y-4">
+                        <h4 class="font-bold text-sm text-gray-800">รายละเอียดเพิ่มเติม (ข้อมูลเกมการ์ด)</h4>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">ความสามารถ (Effect)</label>
+                            <textarea id="card-effect" placeholder="ความสามารถของการ์ด เช่น [บล็อกเกอร์]..." rows="3"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900 outline-none resize-none"></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">ประเภทการ์ด (Category)</label>
+                                <select id="card-category"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none bg-white">
+                                    <option value="Character" selected>Character</option>
+                                    <option value="Leader">Leader</option>
+                                    <option value="Event">Event</option>
+                                    <option value="Stage">Stage</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">คุณลักษณะ (Attribute)</label>
+                                <select id="card-attribute"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none bg-white">
+                                    <option value="">-- ไม่มี (None) --</option>
+                                    <option value="Strike">Strike (ตี)</option>
+                                    <option value="Slash">Slash (ฟัน)</option>
+                                    <option value="Special">Special (พิเศษ)</option>
+                                    <option value="Wisdom">Wisdom (ปัญญา)</option>
+                                    <option value="Ranged">Ranged (ยิง)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">คอสท์ (Cost)</label>
+                                <input type="number" id="card-cost" min="0" placeholder="0"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">พาวเวอร์ (Power)</label>
+                                <input type="number" id="card-power" min="0" step="500" placeholder="0"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">เคาน์เตอร์ (Counter)</label>
+                                <input type="number" id="card-counter" min="0" step="1000" placeholder="0"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">คุณสมบัติ (Traits)</label>
+                            <input type="text" id="card-traits" placeholder="เช่น Fish-Man/Whitebeard Pirates"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">ชื่อชุดหลัก (Set Name)</label>
+                            <input type="text" id="card-set-name" placeholder="เช่น Two Legends"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 outline-none">
+                        </div>
                     </div>
                 </form>
             </div>

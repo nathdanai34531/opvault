@@ -1,7 +1,8 @@
-const CACHE_NAME = 'opvault-cache-v17';
+const CACHE_NAME = 'opvault-cache-v18';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/style.css',
   '/app.js',
   '/admin.html',
   '/manifest.json',
