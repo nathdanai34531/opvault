@@ -825,8 +825,15 @@ async function fetchCardDetails(cardCode) {
         for (const sec of sections) {
             if (!sec.querySelector('span[data-tooltip="Category"]') && 
                 !sec.querySelector('span[data-tooltip="Color"]') && 
+                !sec.querySelector('span[data-tooltip="Type"]') && 
+                !sec.querySelector('span[data-tooltip="Attribute"]') && 
+                !sec.querySelector('span[data-tooltip="Power"]') && 
+                !sec.querySelector('span[data-tooltip="Counter"]') && 
                 !sec.textContent.includes('Illustrated by')) {
-                effect = sec.innerHTML.trim().replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+                const text = sec.textContent.trim();
+                if (text && !text.match(/^\d+\s*\+?\d+/)) {
+                    effect = sec.innerHTML.trim().replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+                }
             }
         }
         
@@ -866,6 +873,35 @@ function renderLightboxCard(card) {
     });
     initPanzoom();
     
+    // Update image overlay info
+    const overlay = document.getElementById('lightbox-overlay');
+    const overlayName = document.getElementById('lightbox-overlay-name');
+    const overlayColorDot = document.getElementById('lightbox-overlay-colordot');
+    const overlaySetRarity = document.getElementById('lightbox-overlay-set-rarity');
+
+    if (overlay && overlayName && overlayColorDot && overlaySetRarity) {
+        overlayName.textContent = card.name;
+        
+        let colorMap = {
+            'red': 'bg-red-500',
+            'blue': 'bg-blue-500',
+            'green': 'bg-green-500',
+            'purple': 'bg-purple-500',
+            'black': 'bg-gray-800',
+            'yellow': 'bg-yellow-400',
+            'multi': 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500'
+        };
+        const colorClass = colorMap[(card.color || '').toLowerCase()] || 'bg-gray-400';
+        overlayColorDot.className = `w-3 h-3 rounded-full ${colorClass} shadow-sm border border-white/50 shrink-0`;
+        
+        let setDisplay = card.set || '';
+        if (card.rarity) {
+            setDisplay += ` · ${card.rarity}`;
+        }
+        overlaySetRarity.textContent = setDisplay;
+        overlay.classList.remove('hidden');
+    }
+    
     const inCart = cart.some(i => i.id === card.id);
     const btnClass = inCart 
         ? "w-full bg-yellow-400 text-gray-900 text-[13px] font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(250,204,21,0.25)] transition tap-effect flex items-center justify-center gap-2 mt-2" 
@@ -884,41 +920,57 @@ function renderLightboxCard(card) {
         const attributeDisplay = translateAttribute(info.attribute);
         const setCode = cardCode.split('-')[0] || '';
         const setNameDisplay = info.setName ? `[${setCode}] ${info.setName}` : `[${setCode}]`;
-        const effectHtml = info.effect ? `
+        
+        // Sanitize effect text - check if it contains attributes/traits/counter/illustrated text or is empty
+        let effectText = info.effect || '';
+        if (effectText) {
+            const cleanEffect = effectText.trim().toLowerCase();
+            const cleanTraits = (info.traits || '').trim().toLowerCase();
+            const cleanAttr = (info.attribute || '').trim().toLowerCase();
+            
+            if (cleanEffect === cleanTraits || 
+                cleanEffect === cleanAttr || 
+                cleanEffect === 'strike' || 
+                cleanEffect === 'slash' || 
+                cleanEffect === 'special' || 
+                cleanEffect === 'wisdom' || 
+                cleanEffect === 'ranged' ||
+                cleanEffect.includes('illustrated by') ||
+                cleanEffect === '-' ||
+                cleanEffect === '') {
+                effectText = '';
+            }
+        }
+        
+        const effectHtml = (effectText && effectText.trim() !== '') ? `
             <div class="relative mt-5 mb-2">
                 <div class="absolute -top-3 left-3 bg-blue-600 text-white font-extrabold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded shadow-sm border border-blue-500 z-10">
                     EFFECT
                 </div>
                 <div class="bg-gray-800/50 border border-gray-700/60 rounded-xl p-3 pt-4.5 text-gray-200 text-[11px] leading-relaxed whitespace-pre-line">
-                    ${formatEffectText(info.effect)}
+                    ${formatEffectText(effectText)}
                 </div>
             </div>
         ` : '';
 
         return `
             <div class="flex flex-col gap-3">
-                <!-- Header: Title & SKU -->
-                <div class="flex justify-between items-start gap-3">
-                    <div class="flex-grow">
-                        <span class="text-[10px] font-bold text-yellow-400 uppercase tracking-widest">${cardCode || card.rarity}</span>
-                        <h2 class="text-base font-black text-white leading-tight mt-0.5">${card.name}</h2>
-                    </div>
-                    <div class="text-right shrink-0 bg-gray-800/80 px-2.5 py-1 rounded-lg border border-gray-700">
-                        <span class="text-[8px] font-bold text-gray-400 uppercase block mb-0.5">รหัสสินค้า</span>
-                        <div class="text-[10px] font-extrabold text-gray-200 tracking-wider">${card.code}</div>
-                    </div>
-                </div>
-
-                <!-- Price and Add button -->
-                <div class="flex justify-between items-center gap-2 mt-1">
+                <!-- Price, SKU & Add button (Optimized space) -->
+                <div class="flex justify-between items-center gap-2">
                     <div>
                         <span class="text-[9px] text-gray-500 uppercase font-bold block leading-none mb-1">ราคาขาย</span>
                         <span class="text-xl font-black text-white tracking-tight leading-none">${formatPrice(card.price)}</span>
                     </div>
-                    <div class="flex-grow max-w-[180px]">
-                        <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass} !my-0 !py-2.5 !text-xs">
-                            ${btnIcon} <span>${btnText}</span>
-                        </button>
+                    <div class="flex items-center gap-2">
+                        <div class="text-right bg-gray-800/60 px-2.5 py-1 rounded-lg border border-gray-700/50">
+                            <span class="text-[8px] font-bold text-gray-400 uppercase block mb-0.5">รหัสสินค้า</span>
+                            <div class="text-[10px] font-extrabold text-gray-200 tracking-wider">${card.code}</div>
+                        </div>
+                        <div class="w-[140px]">
+                            <button id="lightbox-add-btn-${card.id}" onclick="addToCart(${card.id})" class="${btnClass} !my-0 !py-2.5 !text-xs">
+                                ${btnIcon} <span>${btnText}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1089,6 +1141,8 @@ function openLightbox(idOrSrc) {
         img.src = idOrSrc;
         details.innerHTML = '';
         details.classList.add('hidden');
+        const overlay = document.getElementById('lightbox-overlay');
+        if (overlay) overlay.classList.add('hidden');
     } else {
         return; // invalid
     }
@@ -1111,6 +1165,9 @@ function closeLightbox(e) {
     
     const lb = document.getElementById('lightbox');
     lb.classList.add('opacity-0');
+    
+    const overlay = document.getElementById('lightbox-overlay');
+    if (overlay) overlay.classList.add('hidden');
     
     // If swipe close was triggered, the container might still have translation/scale styles
     const container = document.getElementById('lightbox-container');

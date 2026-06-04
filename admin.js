@@ -588,8 +588,15 @@ async function autoFetchCardData() {
         for (const sec of sections) {
             if (!sec.querySelector('span[data-tooltip="Category"]') && 
                 !sec.querySelector('span[data-tooltip="Color"]') && 
+                !sec.querySelector('span[data-tooltip="Type"]') && 
+                !sec.querySelector('span[data-tooltip="Attribute"]') && 
+                !sec.querySelector('span[data-tooltip="Power"]') && 
+                !sec.querySelector('span[data-tooltip="Counter"]') && 
                 !sec.textContent.includes('Illustrated by')) {
-                cardEffect = sec.innerHTML.trim().replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+                const text = sec.textContent.trim();
+                if (text && !text.match(/^\d+\s*\+?\d+/)) {
+                    cardEffect = sec.innerHTML.trim().replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+                }
             }
         }
         
