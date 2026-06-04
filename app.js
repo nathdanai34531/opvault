@@ -752,6 +752,11 @@ function formatEffectText(text) {
     
     // Replace [Keywords] with styled badges
     return text.replace(/\[([^\]]+)\]/g, (match, keyword) => {
+        // If the bracketed text contains <...> (e.g. [<Straw Hat Crew>]), don't box it.
+        if (keyword.includes('<') || keyword.includes('>') || keyword.includes('&lt;') || keyword.includes('&gt;')) {
+            return match;
+        }
+        
         const kw = keyword.trim();
         const kwLower = kw.toLowerCase();
         
