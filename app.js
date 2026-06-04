@@ -1017,15 +1017,16 @@ function renderLightboxCard(card) {
             }
         }
         
-        const spacedEffectText = effectText.replace(/\n+/g, '\n\n');
+        // Split into paragraphs for finer spacing control
+        const spacedEffectHtml = effectText.split(/\n+/).map(p => {
+            const pTrimmed = p.trim();
+            return pTrimmed ? `<p class="mb-1.5 last:mb-0">${formatEffectText(pTrimmed)}</p>` : '';
+        }).join('');
         
         const effectHtml = (effectText && effectText.trim() !== '') ? `
-            <div class="relative mt-5 mb-2">
-                <div class="absolute -top-3 left-3 border border-blue-500/80 text-blue-400 bg-gray-900 font-extrabold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded z-10">
-                    EFFECT
-                </div>
-                <div class="bg-gray-800/50 border border-gray-700/60 rounded-xl p-3 pt-4.5 text-gray-200 text-[11px] leading-relaxed whitespace-pre-line font-sarabun">
-                    ${formatEffectText(spacedEffectText)}
+            <div class="relative mt-3 mb-2">
+                <div class="bg-gray-800/50 border border-gray-700/60 rounded-xl p-3 text-gray-200 text-[11px] leading-relaxed font-sarabun">
+                    ${spacedEffectHtml}
                 </div>
             </div>
         ` : '';
