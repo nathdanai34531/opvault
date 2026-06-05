@@ -1070,19 +1070,8 @@ function renderLightboxCard(card) {
 
     // Helper to check and translate English effect on-the-fly
     const checkAndTranslateCardEffect = (infoObj) => {
-        if (infoObj && infoObj.effect && /[A-Za-z]/.test(infoObj.effect) && !infoObj.isOfficialThai) {
-            translateToThai(infoObj.effect).then(translatedText => {
-                if (translatedText && translatedText !== infoObj.effect) {
-                    infoObj.effect = translatedText;
-                    if (cardCode && cardDetailsCache[cardCode]) {
-                        cardDetailsCache[cardCode].effect = translatedText;
-                    }
-                    if (currentLightboxCardIndex !== -1 && currentLightboxCardIds[currentLightboxCardIndex] === card.id) {
-                        details.innerHTML = renderContent(infoObj);
-                    }
-                }
-            });
-        }
+        // Disabled: Google Translate garbles official Thai text that contains English characters like "KO" or "Yamato".
+        return;
     };
 
     if (hasDetailsInDb) {
