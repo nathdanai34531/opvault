@@ -531,8 +531,14 @@ async function autoFetchCardData() {
 
         // Map data to fields
         document.getElementById('card-name').value = cardData.name || '';
-        document.getElementById('card-image').value = cardData.image || '';
-        if (cardData.image) updateImagePreview();
+        
+        let imageUrl = cardData.image || '';
+        if (imageUrl.includes('asia-th.onepiece-cardgame.com')) {
+            // Use wsrv.nl image proxy to bypass hotlink (CORP) protection
+            imageUrl = 'https://wsrv.nl/?url=' + imageUrl.replace(/^https?:\/\//, '');
+        }
+        document.getElementById('card-image').value = imageUrl;
+        if (imageUrl) updateImagePreview();
         
         document.getElementById('card-rarity').value = cardData.rarity || '';
         document.getElementById('card-category').value = cardData.type || '';
