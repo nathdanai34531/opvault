@@ -659,49 +659,7 @@ function closeMenuOnly() {
 }
 
 function applyWatermark(imageSrc, callback) {
-    const img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.onload = function() {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        
-        ctx.drawImage(img, 0, 0);
-        
-        ctx.save();
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
-        ctx.lineWidth = Math.max(1.5, img.width * 0.002);
-        
-        const fontSize = Math.floor(img.width * 0.08);
-        ctx.font = `900 ${fontSize}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        ctx.rotate(-35 * Math.PI / 180);
-        
-        const stepX = img.width * 0.6;
-        const stepY = img.height * 0.3;
-        
-        for (let x = -img.width; x < img.width * 2; x += stepX) {
-            for (let y = -img.height; y < img.height * 2; y += stepY) {
-                ctx.strokeText("OP.VAULT", x, y);
-                ctx.fillText("OP.VAULT", x, y);
-            }
-        }
-        
-        ctx.restore();
-        
-        try {
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-            callback(dataUrl);
-        } catch(e) {
-            callback(imageSrc); // Fallback if tainted
-        }
-    };
-    img.onerror = () => callback(imageSrc);
-    img.src = imageSrc;
+    callback(imageSrc);
     initPanzoom();
 }
 
