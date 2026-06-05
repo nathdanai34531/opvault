@@ -601,7 +601,92 @@ function openAddModal() {
 
     document.getElementById('modal-title').textContent = 'เพิ่มการ์ดใหม่';
     document.getElementById('card-modal').classList.remove('hidden');
+    
+    // Preload catalog for autocomplete
+    preloadCardCatalog();
 }
+
+// --- Autocomplete Logic ---
+let cachedCardCatalog = null;
+
+async function preloadCardCatalog() {
+    if (cachedCardCatalog) return;
+    try {
+        const response = await fetch('/card_catalog.json');
+        if (response.ok) {
+            cachedCardCatalog = await response.json();
+        }
+    } catch (e) {
+        console.error("Failed to preload catalog:", e);
+    }
+}
+
+function setupAutocomplete() {
+    const input = document.getElementById('card-set');
+    const dropdown = document.getElementById('card-autocomplete-dropdown');
+    if (!input || !dropdown) return;
+
+    input.addEventListener('input', (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        if (!query || !cachedCardCatalog) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        const results = [];
+        for (const [id, data] of Object.entries(cachedCardCatalog)) {
+            const nameMatch = (data.name || '').toLowerCase().includes(query);
+            const idMatch = id.toLowerCase().includes(query);
+            
+            if (nameMatch || idMatch) {
+                results.push({ id, ...data });
+            }
+            if (results.length >= 15) break; // Limit to 15 items
+        }
+
+        if (results.length > 0) {
+            dropdown.innerHTML = results.map(card => {
+                let proxyImg = card.image || '';
+                if (proxyImg.includes('asia-th.onepiece-cardgame.com')) {
+                    proxyImg = 'https://wsrv.nl/?url=' + proxyImg.replace(/^https?:\\/\\//, '') + '&w=64';
+                }
+                
+                return `
+                <div class="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer transition" onclick="selectAutocomplete('${card.id}')">
+                    <div class="w-8 h-12 bg-gray-100 rounded overflow-hidden shrink-0 flex items-center justify-center">
+                        ${proxyImg ? `<img src="${proxyImg}" class="w-full h-full object-contain" loading="lazy">` : `<svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`}
+                    </div>
+                    <div class="flex flex-col overflow-hidden">
+                        <span class="text-xs font-bold text-gray-900 truncate uppercase">${card.id}</span>
+                        <span class="text-xs text-gray-500 truncate">${card.name || 'ไม่มีชื่อ'}</span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            dropdown.classList.remove('hidden');
+        } else {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+}
+
+function selectAutocomplete(cardId) {
+    document.getElementById('card-set').value = cardId;
+    document.getElementById('card-autocomplete-dropdown').classList.add('hidden');
+    autoFetchCardData();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupAutocomplete();
+});
+// --------------------------
 
 function closeAddModal() {
     document.getElementById('card-modal').classList.add('hidden');
