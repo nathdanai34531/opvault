@@ -648,7 +648,7 @@ function setupAutocomplete() {
             dropdown.innerHTML = results.map(card => {
                 let proxyImg = card.image || '';
                 if (proxyImg.includes('asia-th.onepiece-cardgame.com')) {
-                    proxyImg = 'https://wsrv.nl/?url=' + proxyImg.replace(/^https?:\\/\\//, '') + '&w=64';
+                    proxyImg = 'https://wsrv.nl/?url=' + proxyImg.replace(/^https?:\/\//, '') + '&w=64';
                 }
                 
                 return `
