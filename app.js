@@ -2176,7 +2176,9 @@ async function openScanner() {
             });
         }
         video.srcObject = scannerStream;
-        video.play().catch(e => console.error("Auto-play prevented:", e));
+        video.onloadedmetadata = () => {
+            video.play().catch(e => console.error("Auto-play prevented:", e));
+        };
     } catch (err) {
         console.error("Camera access error:", err);
         const errMsg = err.message || err.name || 'Unknown Error';
