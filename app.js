@@ -1008,22 +1008,26 @@ function renderLightboxCard(card) {
 
         const overlayText = document.getElementById('lightbox-img-effect-overlay');
         const overlayBtn = document.getElementById('lightbox-effect-toggle');
+        const bottomOverlay = document.getElementById('lightbox-overlay');
         if (overlayText) {
             let overlayContent = '';
+            if (effectText && effectText.trim() !== '') {
+                overlayContent += spacedEffectHtml;
+            }
             if (info.name || info.traits) {
-                overlayContent += `<div class="${effectText && effectText.trim() !== '' ? 'mb-2 pb-2 border-b border-white/20' : ''} text-center">`;
+                overlayContent += `<div class="${effectText && effectText.trim() !== '' ? 'mt-2 pt-2 border-t border-white/20' : ''} text-center">`;
                 if (info.name) overlayContent += `<div class="font-bold text-[13px] md:text-[15px] text-yellow-400 drop-shadow">${info.name}</div>`;
                 if (info.traits) overlayContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5">${info.traits}</div>`;
                 overlayContent += `</div>`;
-            }
-            if (effectText && effectText.trim() !== '') {
-                overlayContent += spacedEffectHtml;
             }
             
             if (overlayContent !== '') {
                 overlayText.innerHTML = overlayContent;
                 if (overlayBtn) overlayBtn.classList.remove('hidden');
                 // Keep overlay state if already toggled on, otherwise leave it hidden
+                if (!overlayText.classList.contains('hidden') && bottomOverlay) {
+                    bottomOverlay.classList.add('hidden');
+                }
             } else {
                 overlayText.innerHTML = '';
                 overlayText.classList.add('hidden'); // Force hide if empty
@@ -1032,6 +1036,9 @@ function renderLightboxCard(card) {
                     // Reset button appearance
                     overlayBtn.classList.remove('text-white', 'bg-blue-600');
                     overlayBtn.classList.add('text-white/50', 'bg-black/40');
+                }
+                if (bottomOverlay && info.name) {
+                    bottomOverlay.classList.remove('hidden');
                 }
             }
         }
@@ -1171,17 +1178,20 @@ function changeLightboxCard(cardId) {
 
 function toggleLightboxEffectOverlay(e) {
     if (e) e.stopPropagation();
-    const overlay = document.getElementById('lightbox-img-effect-overlay');
+    const overlayText = document.getElementById('lightbox-img-effect-overlay');
     const btn = document.getElementById('lightbox-effect-toggle');
-    if (overlay && btn) {
-        if (overlay.classList.contains('hidden')) {
-            overlay.classList.remove('hidden');
+    const bottomOverlay = document.getElementById('lightbox-overlay');
+    if (overlayText && btn) {
+        if (overlayText.classList.contains('hidden')) {
+            overlayText.classList.remove('hidden');
             btn.classList.add('text-white', 'bg-blue-600');
             btn.classList.remove('text-white/50', 'bg-black/40');
+            if (bottomOverlay) bottomOverlay.classList.add('hidden');
         } else {
-            overlay.classList.add('hidden');
+            overlayText.classList.add('hidden');
             btn.classList.remove('text-white', 'bg-blue-600');
             btn.classList.add('text-white/50', 'bg-black/40');
+            if (bottomOverlay) bottomOverlay.classList.remove('hidden');
         }
     }
 }
