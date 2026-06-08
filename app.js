@@ -2165,7 +2165,7 @@ async function processImageUpload(event) {
         });
         
         await worker.setParameters({
-            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_ ',
+            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
         });
         
         const result = await worker.recognize(file);
