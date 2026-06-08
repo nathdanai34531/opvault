@@ -2226,9 +2226,23 @@ async function processImageUpload(event) {
         const text = result.data.text;
         console.log("OCR Result:", text);
         
-        // Extract all alphanumeric chunks of 4-10 chars
-        const chunks = text.match(/[a-zA-Z0-9]{4,10}/g) || [];
+        // Split by whitespace to preserve dashed codes like "opos-00t"
+        const words = text.split(/\s+/);
         const rawClean = text.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        
+        let chunks = [];
+        if (rawClean.length >= 4) chunks.push(rawClean);
+        
+        for (let w of words) {
+            const c = w.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            if (c.length >= 4) chunks.push(c);
+        }
+        
+        // Also combine adjacent words in case of "OP03 001"
+        for (let i = 0; i < words.length - 1; i++) {
+            const c = (words[i] + words[i+1]).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            if (c.length >= 4) chunks.push(c);
+        }
         
         let addedCount = 0;
         let addedNames = [];
@@ -2253,7 +2267,7 @@ async function processImageUpload(event) {
             return matrix[a.length][b.length];
         };
 
-        if (typeof cards !== 'undefined' && rawClean.length >= 4) {
+        if (typeof cards !== 'undefined' && chunks.length > 0) {
             let bestMatch = null;
             let bestDistance = 999;
             
@@ -2269,20 +2283,29 @@ async function processImageUpload(event) {
                 const cleanCode = card.code.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
                 const normCode = normalize(card.code);
                 
-                // If it's an exact match in the raw text or normalized text
+                // Exact match check
                 if (rawClean.includes(cleanCode) || normalizedRaw.includes(normCode)) {
                     bestMatch = card;
                     bestDistance = 0;
                     break;
                 }
                 
-                // Compare with each chunk
+                // Fuzzy match against all chunks (compare normalized vs normalized to handle 0/O, 1/L/I)
                 for (let chunk of chunks) {
-                    const chunkLower = chunk.toLowerCase();
-                    const dist = levenshtein(chunkLower, cleanCode);
-                    // If distance is very small (e.g. 1 or 2 mistakes)
-                    if (dist < bestDistance && dist <= 3 && chunkLower.length >= 4) {
-                        bestDistance = dist;
+                    const normChunk = normalize(chunk);
+                    
+                    // We compare normChunk with normCode
+                    const dist = levenshtein(normChunk, normCode);
+                    
+                    // If distance is very small (e.g. 1, 2 or 3 mistakes max)
+                    // Also weight it: if it starts with the same 2 chars (e.g. "0p"), it's more likely
+                    let penalty = 0;
+                    if (normChunk.substring(0, 2) !== normCode.substring(0, 2)) penalty += 1;
+                    
+                    const finalDist = dist + penalty;
+                    
+                    if (finalDist < bestDistance && dist <= 3 && normChunk.length >= 4) {
+                        bestDistance = finalDist;
                         bestMatch = card;
                     }
                 }
@@ -2305,7 +2328,7 @@ async function processImageUpload(event) {
             alert(`🎉 สแกนสำเร็จ!\nเพิ่มการ์ดเข้าเด็คทั้งหมด ${addedCount} ใบ:\n${addedNames.join(', ')}`);
             showToast(`เพิ่มการ์ดเข้าเด็คแล้ว ${addedCount} ใบ`);
         } else {
-            alert(`❌ ไม่พบรหัสการ์ดในรูปภาพนี้ครับ\n\n(ข้อความที่ระบบมองเห็น: "${text.substring(0, 50).trim().replace(/\n/g, ' ')}")\n\n💡 คำแนะนำ: ลองถ่ายภาพเต็มใบแทนการครอปครับ AI ต้องการเห็นบริบทเพื่อวิเคราะห์ขนาดตัวอักษรให้แม่นยำ`);
+            alert(`❌ ไม่พบรหัสการ์ดในรูปภาพนี้ครับ\n\n(ข้อความที่ระบบมองเห็น: "${text.substring(0, 50).trim().replace(/\n/g, ' ')}")\n\n💡 คำแนะนำ: ระบบเห็นตัวหนังสือแล้วแต่อ่านเพี้ยนไปเยอะ ลองถ่ายภาพเต็มใบจะช่วยให้ AI อ่านแม่นขึ้นมากครับ`);
         }
     } catch (err) {
         console.error("OCR Error:", err);
