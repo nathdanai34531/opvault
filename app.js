@@ -1021,7 +1021,7 @@ function renderLightboxCard(card) {
         
         let overlayContent = '';
         let nameContent = '';
-        const boxClasses = "bg-black/[.40] p-2.5 md:p-3 rounded-xl border border-white/20 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.5)] text-white";
+        const boxClasses = "bg-black/[.40] p-2.5 md:p-3 rounded-xl backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.5)] text-white";
         
         if (effectText && effectText.trim() !== '') {
             overlayContent += `<div class="${boxClasses} text-[11px] md:text-[13px] leading-relaxed drop-shadow-md">
