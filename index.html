@@ -299,12 +299,13 @@
                 </button>
             </div>
             <div class="relative flex-1 bg-black flex justify-center items-center overflow-hidden">
-                <video id="scanner-video" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline muted></video>
+                <video id="scanner-video" class="absolute inset-0 w-full h-full object-cover z-0" autoplay playsinline muted></video>
                 <!-- Guide box -->
                 <div class="absolute inset-0 z-10 flex justify-center items-center pointer-events-none">
-                    <div class="w-[70%] h-[15%] max-h-[100px] border-2 border-green-500 rounded-lg bg-black/10 flex flex-col justify-end items-center pb-2 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
+                    <div class="absolute inset-0 bg-black/40"></div>
+                    <div class="relative w-[70%] h-[15%] max-h-[100px] border-2 border-green-500 rounded-lg bg-transparent flex flex-col justify-end items-center pb-2 z-20 shadow-[0_0_15px_rgba(34,197,94,0.3)]" style="box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);">
                     </div>
-                    <p class="absolute bottom-[20%] text-white text-sm bg-black/60 px-3 py-1.5 rounded-lg drop-shadow font-medium">Point at card code (e.g. OP01-001)</p>
+                    <p class="absolute bottom-[20%] text-white text-sm bg-black/80 px-3 py-1.5 rounded-lg drop-shadow font-medium z-20">Point at card code (e.g. OP01-001)</p>
                 </div>
             </div>
             <div class="p-5 bg-gray-900 text-center z-20 absolute bottom-0 left-0 w-full">
@@ -659,8 +660,8 @@
         </div>
         </div>
 
-        <script src="simple_deck.js?v=33"></script>
-        <script src="app.js?v=33"></script>
+        <script src="simple_deck.js?v=34"></script>
+        <script src="app.js?v=34"></script>
     </div>
 
     <!-- Register Service Worker -->

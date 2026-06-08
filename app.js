@@ -2186,6 +2186,13 @@ async function openScanner() {
         
         video.onloadedmetadata = () => {
             status.innerText = 'ภาพกำลังมา...';
+            
+            // Force Safari repaint to fix black screen
+            video.style.transform = "translateZ(0)";
+            video.style.display = 'none';
+            void video.offsetHeight;
+            video.style.display = 'block';
+            
             video.play().then(() => {
                 status.innerText = 'พร้อมสแกน! ชี้กล้องไปที่รหัสการ์ดเลยครับ';
             }).catch(e => {
