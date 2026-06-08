@@ -2155,7 +2155,58 @@ async function processImageUpload(event) {
     statusText.innerText = "กำลังอัปโหลดและเตรียมรูปภาพ...";
     
     try {
-        // Run Tesseract with createWorker to set parameters (Whitelist)
+        statusText.innerText = "กำลังปรับปรุงคุณภาพรูปภาพ (Color Inversion)...";
+        
+        // Preprocess image
+        const processedImage = await new Promise((resolve) => {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Slight upscale for small crops
+                let scale = 1;
+                if (img.height < 500) scale = 2;
+                
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                
+                ctx.imageSmoothingEnabled = false; // keep sharp edges
+                
+                ctx.scale(scale, scale);
+                ctx.drawImage(img, 0, 0);
+                
+                // Check if image is dark background with white text, and invert if necessary
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                let darkPixels = 0;
+                let lightPixels = 0;
+                
+                // Sample pixels to determine overall brightness
+                for (let i = 0; i < data.length; i += 4) {
+                    const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
+                    if (brightness < 120) darkPixels++;
+                    else lightPixels++;
+                }
+                
+                // If the background is mostly dark (like the bottom border of OP cards), INVERT COLORS
+                if (darkPixels > lightPixels) {
+                    for (let i = 0; i < data.length; i += 4) {
+                        data[i] = 255 - data[i];       // R
+                        data[i+1] = 255 - data[i+1];   // G
+                        data[i+2] = 255 - data[i+2];   // B
+                    }
+                    ctx.putImageData(imageData, 0, 0);
+                }
+                
+                canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.95);
+            };
+            img.onerror = () => resolve(file);
+        });
+
+        // Run Tesseract with createWorker to set parameters
         const worker = await Tesseract.createWorker('eng', 1, {
             logger: m => {
                 if (m.status === 'recognizing text') {
@@ -2164,68 +2215,97 @@ async function processImageUpload(event) {
             }
         });
         
+        // Remove whitelist to prevent character dropping. Set PSM to Auto (3)
         await worker.setParameters({
-            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
-            tessedit_pageseg_mode: '11', // PSM 11: Sparse text. Find as much text as possible.
+            tessedit_pageseg_mode: '3',
         });
         
-        const result = await worker.recognize(file);
+        const result = await worker.recognize(processedImage);
         await worker.terminate();
         
         const text = result.data.text;
         console.log("OCR Result:", text);
         
-        // Find ALL potential codes matching a loose OP/ST/EB format
-        // Extremely forgiving: 2-6 letters/numbers, optional space/dash/em-dash, 2-6 letters/numbers
-        const regex = /[A-Z0-9]{2,6}\s*[-_—–~]?\s*[A-Z0-9]{2,6}/gi;
-        let match;
-        let foundCodes = new Set();
+        // Extract all alphanumeric chunks of 4-10 chars
+        const chunks = text.match(/[a-zA-Z0-9]{4,10}/g) || [];
+        const rawClean = text.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
         
-        while ((match = regex.exec(text)) !== null) {
-            foundCodes.add(match[0]);
-        }
+        let addedCount = 0;
+        let addedNames = [];
         
-        if (foundCodes.size > 0) {
-            let addedCount = 0;
-            let addedNames = [];
+        // Levenshtein distance function
+        const levenshtein = (a, b) => {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            const matrix = Array(a.length + 1).fill(null).map(() => Array(b.length + 1).fill(null));
+            for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+            for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= a.length; i++) {
+                for (let j = 1; j <= b.length; j++) {
+                    const indicator = a[i - 1] === b[j - 1] ? 0 : 1;
+                    matrix[i][j] = Math.min(
+                        matrix[i][j - 1] + 1, // insertion
+                        matrix[i - 1][j] + 1, // deletion
+                        matrix[i - 1][j - 1] + indicator // substitution
+                    );
+                }
+            }
+            return matrix[a.length][b.length];
+        };
+
+        if (typeof cards !== 'undefined' && rawClean.length >= 4) {
+            let bestMatch = null;
+            let bestDistance = 999;
             
-            // Helper function to normalize codes (treat O as 0, I/L as 1, S as 5, B as 8)
-            const normalize = (c) => c.replace(/[^A-Z0-9]/ig, '').toLowerCase()
-                                      .replace(/[o]/g, '0')
-                                      .replace(/[il]/g, '1')
-                                      .replace(/[s]/g, '5')
-                                      .replace(/[b]/g, '8');
-            
-            for (let code of foundCodes) {
-                if (typeof cards !== 'undefined') {
-                    const cleanCode = normalize(code);
-                    // Filter out obvious garbage (too short)
-                    if (cleanCode.length < 4) continue;
-                    
-                    const foundCard = cards.find(c => c.code && normalize(c.code) === cleanCode);
-                    
-                    if (foundCard) {
-                        const existingIdx = cart.findIndex(i => i.id === foundCard.id);
-                        if (existingIdx !== -1) {
-                            cart[existingIdx].qty = (cart[existingIdx].qty || 1) + 1;
-                        } else {
-                            cart.push({...foundCard, qty: 1});
-                        }
-                        addedCount++;
-                        addedNames.push(foundCard.code);
+            // Normalize function for exact matching fallback
+            const normalize = (c) => c.replace(/[^a-z0-9]/ig, '').toLowerCase()
+                                      .replace(/[o]/g, '0').replace(/[il]/g, '1')
+                                      .replace(/[s]/g, '5').replace(/[b]/g, '8');
+                                      
+            const normalizedRaw = normalize(text);
+
+            for (let card of cards) {
+                if (!card.code) continue;
+                const cleanCode = card.code.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                const normCode = normalize(card.code);
+                
+                // If it's an exact match in the raw text or normalized text
+                if (rawClean.includes(cleanCode) || normalizedRaw.includes(normCode)) {
+                    bestMatch = card;
+                    bestDistance = 0;
+                    break;
+                }
+                
+                // Compare with each chunk
+                for (let chunk of chunks) {
+                    const chunkLower = chunk.toLowerCase();
+                    const dist = levenshtein(chunkLower, cleanCode);
+                    // If distance is very small (e.g. 1 or 2 mistakes)
+                    if (dist < bestDistance && dist <= 3 && chunkLower.length >= 4) {
+                        bestDistance = dist;
+                        bestMatch = card;
                     }
                 }
             }
             
-            if (addedCount > 0) {
-                updateCartUI();
-                alert(`🎉 สแกนสำเร็จ!\nเพิ่มการ์ดเข้าเด็คทั้งหมด ${addedCount} ใบ:\n${addedNames.join(', ')}`);
-                showToast(`เพิ่มการ์ดเข้าเด็คแล้ว ${addedCount} ใบ`);
-            } else {
-                alert(`สแกนเจอข้อความคล้ายรหัสการ์ด แต่ไม่ตรงกับฐานข้อมูล\n(รหัสที่ระบบอ่านได้: ${Array.from(foundCodes).slice(0, 5).join(', ')}...)\n\nข้อความดิบ: ${text.substring(0, 50).trim()}`);
+            if (bestMatch) {
+                const existingIdx = cart.findIndex(i => i.id === bestMatch.id);
+                if (existingIdx !== -1) {
+                    cart[existingIdx].qty = (cart[existingIdx].qty || 1) + 1;
+                } else {
+                    cart.push({...bestMatch, qty: 1});
+                }
+                addedCount++;
+                addedNames.push(bestMatch.code);
             }
+        }
+        
+        if (addedCount > 0) {
+            updateCartUI();
+            alert(`🎉 สแกนสำเร็จ!\nเพิ่มการ์ดเข้าเด็คทั้งหมด ${addedCount} ใบ:\n${addedNames.join(', ')}`);
+            showToast(`เพิ่มการ์ดเข้าเด็คแล้ว ${addedCount} ใบ`);
         } else {
-            alert(`❌ ไม่พบรหัสการ์ดในรูปภาพนี้ครับ\n\n(ข้อความที่ระบบมองเห็น: "${text.substring(0, 50).trim().replace(/\n/g, ' ')}")\n\nลองใช้รูปที่เห็นรหัสการ์ดชัดเจน ไม่มีเงาสะท้อน`);
+            alert(`❌ ไม่พบรหัสการ์ดในรูปภาพนี้ครับ\n\n(ข้อความที่ระบบมองเห็น: "${text.substring(0, 50).trim().replace(/\n/g, ' ')}")\n\n💡 คำแนะนำ: ลองถ่ายภาพเต็มใบแทนการครอปครับ AI ต้องการเห็นบริบทเพื่อวิเคราะห์ขนาดตัวอักษรให้แม่นยำ`);
         }
     } catch (err) {
         console.error("OCR Error:", err);

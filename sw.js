@@ -1,4 +1,4 @@
-const CACHE_NAME = 'opvault-cache-v87';
+const CACHE_NAME = 'opvault-cache-v88';
 const urlsToCache = [
   '/',
   '/index.html',
