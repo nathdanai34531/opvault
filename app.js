@@ -2159,13 +2159,22 @@ async function openScanner() {
     });
 
     try {
-        scannerStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment", focusMode: "continuous" } 
-        });
+        // First try environment with advanced constraints
+        try {
+            scannerStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment" } 
+            });
+        } catch (e1) {
+            // Fallback to basic video
+            console.log("Fallback to basic video constraint");
+            scannerStream = await navigator.mediaDevices.getUserMedia({ 
+                video: true 
+            });
+        }
         video.srcObject = scannerStream;
     } catch (err) {
         console.error("Camera access error:", err);
-        status.innerText = "ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตสิทธิ์การใช้กล้อง";
+        status.innerText = "ไม่สามารถเปิดกล้องได้: " + (err.message || err.name || 'Unknown Error');
         status.classList.remove('hidden');
     }
 }
