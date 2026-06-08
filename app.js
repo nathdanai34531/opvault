@@ -2149,8 +2149,8 @@ async function openScanner() {
     const video = document.getElementById('scanner-video');
     const status = document.getElementById('scanner-status');
     
-    status.classList.add('hidden');
-    status.innerText = '';
+    status.classList.remove('hidden');
+    status.innerText = 'กำลังเปิดกล้อง...';
     modal.classList.remove('hidden');
     
     // Animate in
@@ -2163,21 +2163,35 @@ async function openScanner() {
             throw new Error("เบราว์เซอร์ของคุณไม่รองรับการใช้งานกล้อง (กรุณาเปิดลิงก์ในแอป Safari หรือ Chrome โดยตรง)");
         }
         
-        // First try environment with advanced constraints
+        status.innerText = 'กำลังขอสิทธิ์เข้าถึงกล้อง...';
+        // Try environment with ideal constraints
         try {
             scannerStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment" } 
+                video: { facingMode: { ideal: "environment" } } 
             });
         } catch (e1) {
-            // Fallback to basic video
+            status.innerText = 'กล้องหลังไม่พร้อม กำลังลองกล้องอื่น...';
             console.log("Fallback to basic video constraint", e1);
             scannerStream = await navigator.mediaDevices.getUserMedia({ 
                 video: true 
             });
         }
+        status.innerText = 'เชื่อมต่อกล้องสำเร็จ กำลังแสดงภาพ...';
+        
+        // Force attributes via JS as fallback
+        video.setAttribute('autoplay', '');
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
         video.srcObject = scannerStream;
+        
         video.onloadedmetadata = () => {
-            video.play().catch(e => console.error("Auto-play prevented:", e));
+            status.innerText = 'ภาพกำลังมา...';
+            video.play().then(() => {
+                status.innerText = 'พร้อมสแกน! ชี้กล้องไปที่รหัสการ์ดเลยครับ';
+            }).catch(e => {
+                alert("Auto-play prevented: " + e.message);
+                status.innerText = 'Error: ' + e.message;
+            });
         };
     } catch (err) {
         console.error("Camera access error:", err);
