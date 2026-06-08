@@ -740,6 +740,12 @@ function formatEffectText(text) {
             return `<span class="inline-flex items-center justify-center bg-black text-white font-prompt font-extrabold text-[9px] px-2.5 py-0.5 rounded-full border border-gray-800 mx-0.5 align-middle">ด้ง!! x${num}</span>`;
         }
         
+        // Red Capsule for "Once Per Turn"
+        const isOncePerTurn = kwLower === 'once per turn' || kw === 'เทิร์นละครั้ง' || kw === 'เทิร์นละ 1 ครั้ง' || kw === 'เทิร์นละ1ครั้ง';
+        if (isOncePerTurn) {
+            return `<span class="inline-flex items-center justify-center bg-red-600 text-white font-prompt font-extrabold text-[9px] px-2.5 py-0.5 rounded-full mx-0.5 align-middle shadow-sm">เทิร์นละ 1 ครั้ง</span>`;
+        }
+        
         // 3. Blue Frame Badge for other keywords (with Thai translations)
         let translatedKw = kw;
         const translations = {
@@ -749,7 +755,6 @@ function formatEffectText(text) {
             'activate: main/battle': 'เปิดใช้งาน: หลัก/ต่อสู้',
             'main': 'หลัก',
             'trigger': 'ทริกเกอร์',
-            'once per turn': 'เทิร์นละครั้ง',
             'opponent\'s turn': 'เทิร์นคู่ต่อสู้',
             'your turn': 'เทิร์นเรา',
             'counter': 'เคาน์เตอร์',
@@ -1019,7 +1024,7 @@ function renderLightboxCard(card) {
             }
             if (info.name || info.traits) {
                 overlayContent += `<div class="${boxClasses} self-center w-fit mx-auto max-w-full text-center !p-2 md:!p-2.5 drop-shadow-md translate-y-[38%]">`;
-                if (info.name) overlayContent += `<div class="font-bold text-[13px] md:text-[15px] text-yellow-400 drop-shadow">${info.name}</div>`;
+                if (info.name) overlayContent += `<div class="font-bold text-[15px] md:text-[17px] text-white drop-shadow">${info.name}</div>`;
                 if (info.traits) overlayContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5">${info.traits}</div>`;
                 overlayContent += `</div>`;
             }
