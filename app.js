@@ -1018,12 +1018,12 @@ function renderLightboxCard(card) {
             let overlayContent = '';
             const boxClasses = "bg-black/[.40] p-2.5 md:p-3 rounded-xl border border-white/20 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.5)] text-white";
             if (effectText && effectText.trim() !== '') {
-                overlayContent += `<div class="${boxClasses} text-[11px] md:text-[13px] leading-relaxed drop-shadow-md">
+                overlayContent += `<div class="${boxClasses} text-[11px] md:text-[13px] leading-relaxed drop-shadow-md -translate-y-[20%]">
                     ${spacedEffectHtml}
                 </div>`;
             }
             if (info.name || info.traits) {
-                overlayContent += `<div class="${boxClasses} absolute top-full mt-1.5 md:mt-2 left-1/2 -translate-x-1/2 -translate-y-[15%] w-max max-w-[100%] text-center !p-2 md:!p-2.5 drop-shadow-md">`;
+                overlayContent += `<div class="${boxClasses} absolute top-full mt-1.5 md:mt-2 left-1/2 -translate-x-1/2 -translate-y-[35%] w-max max-w-[100%] text-center !p-2 md:!p-2.5 drop-shadow-md">`;
                 if (info.name) overlayContent += `<div class="font-bold text-[15px] md:text-[17px] text-white drop-shadow whitespace-normal leading-tight">${info.name}</div>`;
                 if (info.traits) overlayContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5 whitespace-normal leading-tight">${info.traits}</div>`;
                 overlayContent += `</div>`;
