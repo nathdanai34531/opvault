@@ -1011,11 +1011,14 @@ function renderLightboxCard(card) {
         const bottomOverlay = document.getElementById('lightbox-overlay');
         if (overlayText) {
             let overlayContent = '';
+            const boxClasses = "bg-black/[.40] p-2.5 md:p-3 rounded-xl border border-white/20 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.5)] text-white";
             if (effectText && effectText.trim() !== '') {
-                overlayContent += spacedEffectHtml;
+                overlayContent += `<div class="${boxClasses} text-[11px] md:text-[13px] leading-relaxed drop-shadow-md">
+                    ${spacedEffectHtml}
+                </div>`;
             }
             if (info.name || info.traits) {
-                overlayContent += `<div class="${effectText && effectText.trim() !== '' ? 'mt-2 pt-2 border-t border-white/20' : ''} text-center">`;
+                overlayContent += `<div class="${boxClasses} text-center !p-2 md:!p-2.5 drop-shadow-md">`;
                 if (info.name) overlayContent += `<div class="font-bold text-[13px] md:text-[15px] text-yellow-400 drop-shadow">${info.name}</div>`;
                 if (info.traits) overlayContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5">${info.traits}</div>`;
                 overlayContent += `</div>`;
