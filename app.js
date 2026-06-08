@@ -2138,3 +2138,147 @@ function copyOrderCode() {
 }
 
 
+
+// ==========================================
+// CAMERA OCR SCANNER
+// ==========================================
+let scannerStream = null;
+
+async function openScanner() {
+    const modal = document.getElementById('scanner-modal');
+    const video = document.getElementById('scanner-video');
+    const status = document.getElementById('scanner-status');
+    
+    status.classList.add('hidden');
+    status.innerText = '';
+    modal.classList.remove('hidden');
+    
+    // Animate in
+    requestAnimationFrame(() => {
+        modal.classList.remove('opacity-0');
+    });
+
+    try {
+        scannerStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment", focusMode: "continuous" } 
+        });
+        video.srcObject = scannerStream;
+    } catch (err) {
+        console.error("Camera access error:", err);
+        status.innerText = "ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตสิทธิ์การใช้กล้อง";
+        status.classList.remove('hidden');
+    }
+}
+
+function closeScanner() {
+    const modal = document.getElementById('scanner-modal');
+    modal.classList.add('opacity-0');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        if (scannerStream) {
+            scannerStream.getTracks().forEach(track => track.stop());
+            scannerStream = null;
+        }
+    }, 300);
+}
+
+async function captureAndScan() {
+    const video = document.getElementById('scanner-video');
+    const canvas = document.getElementById('scanner-canvas');
+    const status = document.getElementById('scanner-status');
+    const btn = document.getElementById('capture-btn');
+    
+    if (!scannerStream) return;
+    
+    // UI update
+    status.innerText = "กำลังสแกนและประมวลผล...";
+    status.classList.remove('hidden');
+    btn.disabled = true;
+    btn.classList.add('opacity-50');
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas to actual video resolution
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw video frame to canvas
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Get cropped area (the guide box is ~70% width, 15% height, max 100px)
+    // We'll just scan the whole canvas to be safe, but cropping improves speed.
+    // Tesseract does better with clear text. We will pass the whole canvas for simplicity,
+    // or we can crop exactly to the guide box to speed it up drastically.
+    
+    const guideWidth = canvas.width * 0.7;
+    const guideHeight = Math.min(canvas.height * 0.15, 100 * (canvas.height / window.innerHeight));
+    const guideX = (canvas.width - guideWidth) / 2;
+    const guideY = (canvas.height - guideHeight) / 2; // Approximating center vertically
+    
+    // Actually, Tesseract can take the canvas directly.
+    try {
+        const result = await Tesseract.recognize(canvas, 'eng', {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    status.innerText = `กำลังสแกน... ${Math.round(m.progress * 100)}%`;
+                }
+            }
+        });
+        
+        const text = result.data.text;
+        console.log("OCR Result:", text);
+        
+        // Match standard OP/EB/ST prefixes (e.g. OP01-001, OP01-001_p1, EB01-001)
+        // Also sometimes it might misread O as 0, or P as something else, but we rely on standard regex first.
+        const matches = text.match(/[A-Z]{2,3}[0-9]{2}-[0-9]{3}/g);
+        
+        if (matches && matches.length > 0) {
+            const code = matches[0];
+            
+            let foundCard = null;
+            if (typeof cards !== 'undefined') {
+                const cleanCode = code.replace(/[^A-Z0-9]/ig, '').toLowerCase();
+                for (let c of cards) {
+                    if (c.code && c.code.replace(/[^A-Z0-9]/ig, '').toLowerCase() === cleanCode) {
+                        foundCard = c;
+                        break;
+                    }
+                }
+            }
+            
+            if (foundCard) {
+                status.innerText = `พบการ์ด: ${foundCard.code} - ${foundCard.name}`;
+                // Trigger add to cart explicitly
+                const existingIdx = cart.findIndex(i => i.id === foundCard.id);
+                if (existingIdx !== -1) {
+                    cart[existingIdx].qty = (cart[existingIdx].qty || 1) + 1;
+                } else {
+                    cart.push({...foundCard, qty: 1});
+                }
+                updateCartUI();
+                showToast(`เพิ่ม ${foundCard.code || foundCard.id} เข้าเด็คแล้ว`);
+                
+                // Add success visual feedback
+                btn.classList.replace('bg-blue-600', 'bg-green-600');
+                btn.innerHTML = 'สำเร็จ!';
+                
+                setTimeout(() => {
+                    closeScanner();
+                    btn.classList.replace('bg-green-600', 'bg-blue-600');
+                    btn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Scan Code`;
+                }, 1500);
+            } else {
+                status.innerText = `สแกนได้รหัส: ${code} แต่ไม่พบในระบบ`;
+            }
+        } else {
+            status.innerText = "ไม่พบรหัสการ์ด ลองปรับให้ชัดเจนแล้วสแกนใหม่";
+        }
+    } catch (err) {
+        console.error(err);
+        status.innerText = "เกิดข้อผิดพลาดในการสแกน";
+    } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+    }
+}

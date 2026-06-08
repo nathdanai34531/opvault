@@ -38,6 +38,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Panzoom for image zooming -->
     <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body class="flex justify-center text-gray-900 selection:bg-yellow-200 overscroll-none">
     <div class="w-full max-w-md bg-white min-h-screen relative shadow-2xl pb-24 flex flex-col">
@@ -50,7 +51,10 @@
                     <div class="flex items-center gap-2 cursor-pointer" id="secret-admin-trigger">
                         <img src="logo.png" alt="OP.VAULT" class="h-12 md:h-16 w-auto object-contain -my-2 md:-my-4">
                     </div>
-                    <div class="flex items-center">
+                    <div class="flex items-center gap-1">
+                        <button onclick="openScanner()" class="text-white p-1.5 hover:bg-gray-800 rounded-lg transition tap-effect" title="Scan Card">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </button>
                         <button onclick="toggleMenu()" class="text-white p-1.5 hover:bg-gray-800 rounded-lg transition tap-effect">
                             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                         </button>
@@ -285,6 +289,33 @@
 
         <!-- Overlay -->
         <div id="overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/40 z-[48] hidden backdrop-blur-sm transition-opacity opacity-0"></div>
+
+        <!-- Scanner Modal -->
+        <div id="scanner-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col pointer-events-auto transition-opacity duration-300 opacity-0">
+            <div class="flex justify-between items-center p-4 bg-gray-900 text-white z-20 absolute top-0 left-0 w-full">
+                <h2 class="text-lg font-bold">Scan Card Code</h2>
+                <button onclick="closeScanner()" class="p-2 bg-gray-800 rounded-full hover:bg-gray-700 tap-effect">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="relative flex-1 bg-black flex justify-center items-center overflow-hidden">
+                <video id="scanner-video" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline></video>
+                <!-- Guide box -->
+                <div class="absolute inset-0 z-10 flex justify-center items-center pointer-events-none">
+                    <div class="w-[70%] h-[15%] max-h-[100px] border-2 border-green-500 rounded-lg bg-black/10 flex flex-col justify-end items-center pb-2 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
+                    </div>
+                    <p class="absolute bottom-[20%] text-white text-sm bg-black/60 px-3 py-1.5 rounded-lg drop-shadow font-medium">Point at card code (e.g. OP01-001)</p>
+                </div>
+            </div>
+            <div class="p-5 bg-gray-900 text-center z-20 absolute bottom-0 left-0 w-full">
+                <button id="capture-btn" class="bg-blue-600 text-white px-6 py-3.5 rounded-xl font-bold w-full tap-effect text-lg shadow-lg flex justify-center items-center gap-2" onclick="captureAndScan()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Scan Code
+                </button>
+                <div id="scanner-status" class="text-white mt-3 text-sm h-5 font-medium transition-all"></div>
+            </div>
+            <canvas id="scanner-canvas" class="hidden"></canvas>
+        </div>
 
         <!-- Lightbox -->
         <div id="lightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex-col items-center justify-center p-0 md:p-4 transition-opacity opacity-0 backdrop-blur-md" onclick="closeLightbox(event)">
@@ -628,8 +659,8 @@
         </div>
         </div>
 
-        <script src="simple_deck.js?v=28"></script>
-        <script src="app.js?v=28"></script>
+        <script src="simple_deck.js?v=29"></script>
+        <script src="app.js?v=29"></script>
     </div>
 
     <!-- Register Service Worker -->
