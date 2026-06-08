@@ -2155,14 +2155,21 @@ async function processImageUpload(event) {
     statusText.innerText = "กำลังอัปโหลดและเตรียมรูปภาพ...";
     
     try {
-        // Run Tesseract directly on the file object
-        const result = await Tesseract.recognize(file, 'eng', {
+        // Run Tesseract with createWorker to set parameters (Whitelist)
+        const worker = await Tesseract.createWorker('eng', 1, {
             logger: m => {
                 if (m.status === 'recognizing text') {
                     statusText.innerText = `กำลังสแกนรูปภาพ... ${Math.round(m.progress * 100)}%`;
                 }
             }
         });
+        
+        await worker.setParameters({
+            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_ ',
+        });
+        
+        const result = await worker.recognize(file);
+        await worker.terminate();
         
         const text = result.data.text;
         console.log("OCR Result:", text);
