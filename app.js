@@ -1030,7 +1030,7 @@ function renderLightboxCard(card) {
         }
         
         if (info.name || info.traits) {
-            nameContent += `<div class="${boxClasses} self-center w-fit mx-auto max-w-[100%] text-center !p-2 md:!p-2.5 drop-shadow-md translate-y-[35%]">`;
+            nameContent += `<div class="${boxClasses} self-center w-fit mx-auto max-w-[100%] text-center !p-2 md:!p-2.5 drop-shadow-md translate-y-[85%]">`;
             if (info.name) nameContent += `<div class="font-bold text-[15px] md:text-[17px] text-white drop-shadow whitespace-normal leading-tight">${info.name}</div>`;
             if (info.traits) nameContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5 whitespace-normal leading-tight">${info.traits}</div>`;
             nameContent += `</div>`;
