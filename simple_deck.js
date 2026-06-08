@@ -7,7 +7,8 @@ async function loadCardCatalog() {
     try {
         const response = await fetch('card_catalog.json');
         if (response.ok) {
-            fullCardCatalog = await response.json();
+            const data = await response.json();
+            fullCardCatalog = Array.isArray(data) ? data : Object.values(data);
         } else {
             console.error('Failed to load card_catalog.json');
             fullCardCatalog = window.cards || []; // Fallback to inventory
@@ -46,42 +47,47 @@ async function buildSimpleDeck() {
     btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> กำลังโหลด...`;
     btn.disabled = true;
 
-    await loadCardCatalog();
+    try {
+        await loadCardCatalog();
 
-    const lines = input.split('\n');
-    simpleDeckCards = [];
-    const notFound = [];
-    
-    lines.forEach(line => {
-        let text = line.trim().toUpperCase();
-        if(!text) return;
+        const lines = input.split('\n');
+        simpleDeckCards = [];
+        const notFound = [];
         
-        let qty = 1;
-        const match = text.match(/^(\d+)[Xx\s]+(.+)$/);
-        if (match) {
-            qty = parseInt(match[1]);
-            text = match[2].trim();
+        lines.forEach(line => {
+            let text = line.trim().toUpperCase();
+            if(!text) return;
+            
+            let qty = 1;
+            const match = text.match(/^(\d+)[Xx\s]+(.+)$/);
+            if (match) {
+                qty = parseInt(match[1]);
+                text = match[2].trim();
+            }
+            
+            let foundCard = fullCardCatalog.find(c => (c.code || '').toUpperCase() === text || (c.cardCode || '').toUpperCase() === text);
+            
+            if (foundCard) {
+                simpleDeckCards.push({
+                    card: foundCard,
+                    qty: qty
+                });
+            } else {
+                notFound.push(text);
+            }
+        });
+        
+        renderSimpleDeck();
+        
+        if (notFound.length > 0) {
+            alert("ไม่พบรหัสการ์ดเหล่านี้ในระบบ:\n" + notFound.join('\n'));
         }
-        
-        let foundCard = fullCardCatalog.find(c => (c.code || '').toUpperCase() === text || (c.cardCode || '').toUpperCase() === text);
-        
-        if (foundCard) {
-            simpleDeckCards.push({
-                card: foundCard,
-                qty: qty
-            });
-        } else {
-            notFound.push(text);
-        }
-    });
-    
-    renderSimpleDeck();
-    
-    btn.innerHTML = ogText;
-    btn.disabled = false;
-    
-    if (notFound.length > 0) {
-        alert("ไม่พบรหัสการ์ดเหล่านี้ในระบบ:\n" + notFound.join('\n'));
+    } catch (err) {
+        console.error("Deck builder error:", err);
+        alert("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + err.message);
+    } finally {
+        btn.innerHTML = ogText;
+        btn.disabled = false;
     }
 }
 
