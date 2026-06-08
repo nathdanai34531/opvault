@@ -1018,7 +1018,7 @@ function renderLightboxCard(card) {
             let overlayContent = '';
             const boxClasses = "bg-black/[.40] p-2.5 md:p-3 rounded-xl border border-white/20 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.5)] text-white";
             if (effectText && effectText.trim() !== '') {
-                overlayContent += `<div class="${boxClasses} text-[11px] md:text-[13px] leading-relaxed drop-shadow-md -translate-y-[20%]">
+                overlayContent += `<div class="${boxClasses} text-[11px] md:text-[13px] leading-relaxed drop-shadow-md -translate-y-[50%]">
                     ${spacedEffectHtml}
                 </div>`;
             }
