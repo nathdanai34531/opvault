@@ -2152,11 +2152,7 @@ async function openScanner() {
     status.classList.remove('hidden');
     status.innerText = 'กำลังเปิดกล้อง...';
     modal.classList.remove('hidden');
-    
-    // Animate in
-    requestAnimationFrame(() => {
-        modal.classList.remove('opacity-0');
-    });
+    modal.classList.remove('opacity-0');
 
     try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -2167,7 +2163,11 @@ async function openScanner() {
         // Try environment with ideal constraints
         try {
             scannerStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: { ideal: "environment" } } 
+                video: { 
+                    facingMode: "environment",
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
             });
         } catch (e1) {
             status.innerText = 'กล้องหลังไม่พร้อม กำลังลองกล้องอื่น...';

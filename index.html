@@ -291,7 +291,7 @@
         <div id="overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/40 z-[48] hidden backdrop-blur-sm transition-opacity opacity-0"></div>
 
         <!-- Scanner Modal -->
-        <div id="scanner-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col pointer-events-auto transition-opacity duration-300 opacity-0">
+        <div id="scanner-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col pointer-events-auto">
             <div class="flex justify-between items-center p-4 bg-gray-900 text-white z-20 absolute top-0 left-0 w-full">
                 <h2 class="text-lg font-bold">Scan Card Code</h2>
                 <button onclick="closeScanner()" class="p-2 bg-gray-800 rounded-full hover:bg-gray-700 tap-effect">
@@ -299,9 +299,9 @@
                 </button>
             </div>
             <div class="relative flex-1 bg-black flex justify-center items-center overflow-hidden">
-                <video id="scanner-video" class="absolute inset-0 w-full h-full object-cover z-0" autoplay playsinline muted></video>
+                <video id="scanner-video" class="absolute inset-0 w-full h-full object-cover z-10" autoplay playsinline muted></video>
                 <!-- Guide box -->
-                <div class="absolute inset-0 z-10 flex justify-center items-center pointer-events-none">
+                <div class="absolute inset-0 z-20 flex justify-center items-center pointer-events-none">
                     <div class="absolute inset-0 bg-black/40"></div>
                     <div class="relative w-[70%] h-[15%] max-h-[100px] border-2 border-green-500 rounded-lg bg-transparent flex flex-col justify-end items-center pb-2 z-20 shadow-[0_0_15px_rgba(34,197,94,0.3)]" style="box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);">
                     </div>
@@ -660,8 +660,8 @@
         </div>
         </div>
 
-        <script src="simple_deck.js?v=34"></script>
-        <script src="app.js?v=34"></script>
+        <script src="simple_deck.js?v=35"></script>
+        <script src="app.js?v=35"></script>
     </div>
 
     <!-- Register Service Worker -->
