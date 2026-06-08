@@ -724,20 +724,20 @@ function formatEffectText(text) {
         const isDoubleAttack = kwLower === 'double attack' || kw === 'ดับเบิ้ลแอทแทค';
         
         if (isBlocker) {
-            return `<span class="diamond-badge-outer font-prompt mx-1 align-middle"><span class="diamond-badge-inner">บล็อกเกอร์</span></span>`;
+            return `<span class="diamond-badge-outer font-prompt mx-0.5 align-middle"><span class="diamond-badge-inner">บล็อกเกอร์</span></span>`;
         }
         if (isRush) {
-            return `<span class="diamond-badge-outer font-prompt mx-1 align-middle"><span class="diamond-badge-inner">จู่โจมฉับพลัน</span></span>`;
+            return `<span class="diamond-badge-outer font-prompt mx-0.5 align-middle"><span class="diamond-badge-inner">จู่โจมฉับพลัน</span></span>`;
         }
         if (isDoubleAttack) {
-            return `<span class="diamond-badge-outer font-prompt mx-1 align-middle"><span class="diamond-badge-inner">ดับเบิ้ลแอทแทค</span></span>`;
+            return `<span class="diamond-badge-outer font-prompt mx-0.5 align-middle"><span class="diamond-badge-inner">ดับเบิ้ลแอทแทค</span></span>`;
         }
         
         // 2. Black Capsule for DON!! x... / ด้ง!! x...
         const donMatch = kw.match(/don!!\s*x\s*(\d+)/i) || kw.match(/ด้ง!!\s*x\s*(\d+)/i) || kw.match(/ดัง!!\s*x\s*(\d+)/i) || kw.match(/ดง!!\s*x\s*(\d+)/i);
         if (donMatch) {
             const num = donMatch[1];
-            return `<span class="inline-flex items-center justify-center bg-black text-white font-prompt font-extrabold text-[9px] px-2.5 py-0.5 rounded-full border border-gray-800 mx-1 align-middle">ด้ง!! x${num}</span>`;
+            return `<span class="inline-flex items-center justify-center bg-black text-white font-prompt font-extrabold text-[9px] px-2.5 py-0.5 rounded-full border border-gray-800 mx-0.5 align-middle">ด้ง!! x${num}</span>`;
         }
         
         // 3. Blue Frame Badge for other keywords (with Thai translations)
@@ -763,7 +763,7 @@ function formatEffectText(text) {
             translatedKw = translations[kwLower];
         }
         
-        return `<span class="inline-flex items-center justify-center bg-blue-600 text-white font-prompt font-extrabold text-[9px] px-1.5 py-0.5 rounded mx-1 align-middle">${translatedKw}</span>`;
+        return `<span class="inline-flex items-center justify-center bg-blue-600 text-white font-prompt font-extrabold text-[9px] px-1.5 py-0.5 rounded mx-0.5 align-middle">${translatedKw}</span>`;
     });
 }
 
