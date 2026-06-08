@@ -925,7 +925,8 @@ function renderLightboxCard(card) {
             'multi': 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500'
         };
         const colorClass = colorMap[(card.color || '').toLowerCase()] || 'bg-gray-400';
-        overlayColorDot.className = `px-2 py-[3px] rounded-full text-[10px] font-bold text-white shadow-sm shrink-0 leading-none flex items-center justify-center ${colorClass}`;
+        const textColorClass = (card.color || '').toLowerCase() === 'yellow' ? 'text-gray-900' : 'text-white';
+        overlayColorDot.className = `px-2 py-[3px] rounded-full text-[10px] font-bold ${textColorClass} shadow-sm shrink-0 leading-none flex items-center justify-center ${colorClass}`;
         overlayColorDot.textContent = `สี${translateColor(card.color || '')}`;
         
         let setDisplay = card.set || '';
