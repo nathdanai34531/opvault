@@ -1018,7 +1018,7 @@ function renderLightboxCard(card) {
                 </div>`;
             }
             if (info.name || info.traits) {
-                overlayContent += `<div class="${boxClasses} text-center !p-2 md:!p-2.5 drop-shadow-md translate-y-[25%]">`;
+                overlayContent += `<div class="${boxClasses} text-center !p-2 md:!p-2.5 drop-shadow-md translate-y-[27%]">`;
                 if (info.name) overlayContent += `<div class="font-bold text-[13px] md:text-[15px] text-yellow-400 drop-shadow">${info.name}</div>`;
                 if (info.traits) overlayContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5">${info.traits}</div>`;
                 overlayContent += `</div>`;
