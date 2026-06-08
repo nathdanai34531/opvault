@@ -1007,11 +1007,32 @@ function renderLightboxCard(card) {
         ` : '';
 
         const overlayText = document.getElementById('lightbox-img-effect-overlay');
+        const overlayBtn = document.getElementById('lightbox-effect-toggle');
         if (overlayText) {
+            let overlayContent = '';
+            if (info.name || info.traits) {
+                overlayContent += `<div class="${effectText && effectText.trim() !== '' ? 'mb-2 pb-2 border-b border-white/20' : ''} text-center">`;
+                if (info.name) overlayContent += `<div class="font-bold text-[13px] md:text-[15px] text-yellow-400 drop-shadow">${info.name}</div>`;
+                if (info.traits) overlayContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5">${info.traits}</div>`;
+                overlayContent += `</div>`;
+            }
             if (effectText && effectText.trim() !== '') {
-                overlayText.innerHTML = spacedEffectHtml;
+                overlayContent += spacedEffectHtml;
+            }
+            
+            if (overlayContent !== '') {
+                overlayText.innerHTML = overlayContent;
+                if (overlayBtn) overlayBtn.classList.remove('hidden');
+                // Keep overlay state if already toggled on, otherwise leave it hidden
             } else {
                 overlayText.innerHTML = '';
+                overlayText.classList.add('hidden'); // Force hide if empty
+                if (overlayBtn) {
+                    overlayBtn.classList.add('hidden');
+                    // Reset button appearance
+                    overlayBtn.classList.remove('text-white', 'bg-blue-600');
+                    overlayBtn.classList.add('text-white/50', 'bg-black/40');
+                }
             }
         }
 
