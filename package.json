@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "firebase": "^12.14.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
   }
 }
