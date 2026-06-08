@@ -2168,8 +2168,8 @@ async function processImageUpload(event) {
         console.log("OCR Result:", text);
         
         // Find ALL potential codes matching a loose OP/ST/EB format
-        // This regex is very forgiving: 2-4 letters/numbers, optional space/dash, 3-4 letters/numbers
-        const regex = /[A-Z0-9]{2,4}\s*[-_]?\s*[A-Z0-9]{3,4}/gi;
+        // Extremely forgiving: 2-6 letters/numbers, optional space/dash/em-dash, 2-6 letters/numbers
+        const regex = /[A-Z0-9]{2,6}\s*[-_—–~]?\s*[A-Z0-9]{2,6}/gi;
         let match;
         let foundCodes = new Set();
         
@@ -2181,17 +2181,18 @@ async function processImageUpload(event) {
             let addedCount = 0;
             let addedNames = [];
             
-            // Helper function to normalize codes (treat O as 0, I/L as 1)
+            // Helper function to normalize codes (treat O as 0, I/L as 1, S as 5, B as 8)
             const normalize = (c) => c.replace(/[^A-Z0-9]/ig, '').toLowerCase()
                                       .replace(/[o]/g, '0')
                                       .replace(/[il]/g, '1')
-                                      .replace(/[s]/g, '5');
+                                      .replace(/[s]/g, '5')
+                                      .replace(/[b]/g, '8');
             
             for (let code of foundCodes) {
                 if (typeof cards !== 'undefined') {
                     const cleanCode = normalize(code);
                     // Filter out obvious garbage (too short)
-                    if (cleanCode.length < 5) continue;
+                    if (cleanCode.length < 4) continue;
                     
                     const foundCard = cards.find(c => c.code && normalize(c.code) === cleanCode);
                     
@@ -2213,10 +2214,10 @@ async function processImageUpload(event) {
                 alert(`🎉 สแกนสำเร็จ!\nเพิ่มการ์ดเข้าเด็คทั้งหมด ${addedCount} ใบ:\n${addedNames.join(', ')}`);
                 showToast(`เพิ่มการ์ดเข้าเด็คแล้ว ${addedCount} ใบ`);
             } else {
-                alert(`สแกนเจอข้อความคล้ายรหัสการ์ด แต่ไม่ตรงกับฐานข้อมูล\n(รหัสที่ระบบอ่านได้: ${Array.from(foundCodes).slice(0, 5).join(', ')}...)`);
+                alert(`สแกนเจอข้อความคล้ายรหัสการ์ด แต่ไม่ตรงกับฐานข้อมูล\n(รหัสที่ระบบอ่านได้: ${Array.from(foundCodes).slice(0, 5).join(', ')}...)\n\nข้อความดิบ: ${text.substring(0, 50).trim()}`);
             }
         } else {
-            alert(`❌ ไม่พบรหัสการ์ดในรูปภาพนี้ครับ\n\n(ลองใช้รูปที่เห็นรหัสการ์ดชัดเจน ไม่มีเงาสะท้อน)`);
+            alert(`❌ ไม่พบรหัสการ์ดในรูปภาพนี้ครับ\n\n(ข้อความที่ระบบมองเห็น: "${text.substring(0, 50).trim().replace(/\n/g, ' ')}")\n\nลองใช้รูปที่เห็นรหัสการ์ดชัดเจน ไม่มีเงาสะท้อน`);
         }
     } catch (err) {
         console.error("OCR Error:", err);
