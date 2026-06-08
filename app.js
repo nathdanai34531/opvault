@@ -1006,6 +1006,15 @@ function renderLightboxCard(card) {
             </div>
         ` : '';
 
+        const overlayText = document.getElementById('lightbox-img-effect-overlay');
+        if (overlayText) {
+            if (effectText && effectText.trim() !== '') {
+                overlayText.innerHTML = spacedEffectHtml;
+            } else {
+                overlayText.innerHTML = '';
+            }
+        }
+
         return `
             <div class="flex flex-col gap-3">
                 <!-- Price & Add button (Optimized space) -->
@@ -1137,6 +1146,23 @@ function changeLightboxCard(cardId) {
         imgContainer.classList.remove('lightbox-transition-hidden');
         details.classList.remove('lightbox-transition-hidden');
     }, 200);
+}
+
+function toggleLightboxEffectOverlay(e) {
+    if (e) e.stopPropagation();
+    const overlay = document.getElementById('lightbox-img-effect-overlay');
+    const btn = document.getElementById('lightbox-effect-toggle');
+    if (overlay && btn) {
+        if (overlay.classList.contains('hidden')) {
+            overlay.classList.remove('hidden');
+            btn.classList.add('text-white', 'bg-blue-600');
+            btn.classList.remove('text-white/50', 'bg-black/40');
+        } else {
+            overlay.classList.add('hidden');
+            btn.classList.remove('text-white', 'bg-blue-600');
+            btn.classList.add('text-white/50', 'bg-black/40');
+        }
+    }
 }
 
 function openLightbox(idOrSrc) {
