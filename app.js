@@ -1021,8 +1021,8 @@ function renderLightboxCard(card) {
         
         let overlayContent = '';
         let nameContent = '';
-        const boxClasses = "bg-black/[.55] px-6 py-4 md:px-8 md:py-5 backdrop-blur-md text-white w-[115%] -ml-[7.5%]";
-        const maskStyle = "style=\"-webkit-mask-image: radial-gradient(ellipse 95% 85% at 50% 50%, black 50%, transparent 100%); mask-image: radial-gradient(ellipse 95% 85% at 50% 50%, black 50%, transparent 100%);\"";
+        const boxClasses = "bg-black/[.40] p-2.5 md:p-3 rounded-xl backdrop-blur-md text-white";
+        const maskStyle = "style=\"-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); -webkit-mask-composite: source-in; mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); mask-composite: intersect;\"";
         
         if (effectText && effectText.trim() !== '') {
             overlayContent += `<div class="${boxClasses} text-[11px] md:text-[13px] leading-relaxed drop-shadow-md" ${maskStyle}>
@@ -1031,7 +1031,7 @@ function renderLightboxCard(card) {
         }
         
         if (info.name || info.traits) {
-            nameContent += `<div class="${boxClasses} self-center mx-auto text-center drop-shadow-md translate-y-[83%]" ${maskStyle}>`;
+            nameContent += `<div class="${boxClasses} self-center w-fit mx-auto max-w-[100%] text-center !p-2 md:!p-2.5 drop-shadow-md translate-y-[83%]" ${maskStyle}>`;
             if (info.name) nameContent += `<div class="font-bold text-[15px] md:text-[17px] text-white drop-shadow whitespace-normal leading-tight">${info.name}</div>`;
             if (info.traits) nameContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5 whitespace-normal leading-tight">${info.traits}</div>`;
             nameContent += `</div>`;
