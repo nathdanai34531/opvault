@@ -2159,6 +2159,10 @@ async function openScanner() {
     });
 
     try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error("เบราว์เซอร์ของคุณไม่รองรับการใช้งานกล้อง (กรุณาเปิดลิงก์ในแอป Safari หรือ Chrome โดยตรง)");
+        }
+        
         // First try environment with advanced constraints
         try {
             scannerStream = await navigator.mediaDevices.getUserMedia({ 
@@ -2166,16 +2170,19 @@ async function openScanner() {
             });
         } catch (e1) {
             // Fallback to basic video
-            console.log("Fallback to basic video constraint");
+            console.log("Fallback to basic video constraint", e1);
             scannerStream = await navigator.mediaDevices.getUserMedia({ 
                 video: true 
             });
         }
         video.srcObject = scannerStream;
+        video.play().catch(e => console.error("Auto-play prevented:", e));
     } catch (err) {
         console.error("Camera access error:", err);
-        status.innerText = "ไม่สามารถเปิดกล้องได้: " + (err.message || err.name || 'Unknown Error');
+        const errMsg = err.message || err.name || 'Unknown Error';
+        status.innerText = "ไม่สามารถเปิดกล้องได้: " + errMsg;
         status.classList.remove('hidden');
+        alert("ไม่สามารถเปิดกล้องได้: " + errMsg + "\nหากคุณเปิดผ่าน LINE/Facebook กรุณากดเมนูมุมขวาบนแล้วเลือก 'เปิดในเบราว์เซอร์' (Open in Browser)");
     }
 }
 
