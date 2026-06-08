@@ -1023,9 +1023,9 @@ function renderLightboxCard(card) {
                 </div>`;
             }
             if (info.name || info.traits) {
-                overlayContent += `<div class="${boxClasses} self-center w-fit mx-auto max-w-full text-center !p-2 md:!p-2.5 drop-shadow-md">`;
-                if (info.name) overlayContent += `<div class="font-bold text-[15px] md:text-[17px] text-white drop-shadow">${info.name}</div>`;
-                if (info.traits) overlayContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5">${info.traits}</div>`;
+                overlayContent += `<div class="${boxClasses} absolute top-full mt-1.5 md:mt-2 left-1/2 -translate-x-1/2 w-max max-w-[100%] text-center !p-2 md:!p-2.5 drop-shadow-md">`;
+                if (info.name) overlayContent += `<div class="font-bold text-[15px] md:text-[17px] text-white drop-shadow whitespace-normal leading-tight">${info.name}</div>`;
+                if (info.traits) overlayContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5 whitespace-normal leading-tight">${info.traits}</div>`;
                 overlayContent += `</div>`;
             }
             
