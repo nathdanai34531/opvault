@@ -1011,43 +1011,53 @@ function renderLightboxCard(card) {
             </div>
         ` : '';
 
-        const overlayText = document.getElementById('lightbox-img-effect-overlay');
+        const effectOverlay = document.getElementById('lightbox-img-effect-overlay');
+        const nameOverlay = document.getElementById('lightbox-img-name-overlay');
         const overlayBtn = document.getElementById('lightbox-effect-toggle');
         const bottomOverlay = document.getElementById('lightbox-overlay');
-        if (overlayText) {
-            let overlayContent = '';
-            const boxClasses = "bg-black/[.40] p-2.5 md:p-3 rounded-xl border border-white/20 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.5)] text-white";
-            if (effectText && effectText.trim() !== '') {
-                overlayContent += `<div class="${boxClasses} text-[11px] md:text-[13px] leading-relaxed drop-shadow-md">
-                    ${spacedEffectHtml}
-                </div>`;
-            }
-            if (info.name || info.traits) {
-                overlayContent += `<div class="${boxClasses} absolute top-full mt-1.5 md:mt-2 left-1/2 -translate-x-1/2 -translate-y-[35%] w-max max-w-[100%] text-center !p-2 md:!p-2.5 drop-shadow-md">`;
-                if (info.name) overlayContent += `<div class="font-bold text-[15px] md:text-[17px] text-white drop-shadow whitespace-normal leading-tight">${info.name}</div>`;
-                if (info.traits) overlayContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5 whitespace-normal leading-tight">${info.traits}</div>`;
-                overlayContent += `</div>`;
-            }
+        
+        if (effectOverlay) effectOverlay.innerHTML = '';
+        if (nameOverlay) nameOverlay.innerHTML = '';
+        
+        let overlayContent = '';
+        let nameContent = '';
+        const boxClasses = "bg-black/[.40] p-2.5 md:p-3 rounded-xl border border-white/20 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.5)] text-white";
+        
+        if (effectText && effectText.trim() !== '') {
+            overlayContent += `<div class="${boxClasses} text-[11px] md:text-[13px] leading-relaxed drop-shadow-md">
+                ${spacedEffectHtml}
+            </div>`;
+        }
+        
+        if (info.name || info.traits) {
+            nameContent += `<div class="${boxClasses} self-center w-fit mx-auto max-w-[100%] text-center !p-2 md:!p-2.5 drop-shadow-md -translate-y-[35%]">`;
+            if (info.name) nameContent += `<div class="font-bold text-[15px] md:text-[17px] text-white drop-shadow whitespace-normal leading-tight">${info.name}</div>`;
+            if (info.traits) nameContent += `<div class="text-[9px] md:text-[10px] text-gray-300 mt-0.5 whitespace-normal leading-tight">${info.traits}</div>`;
+            nameContent += `</div>`;
+        }
+        
+        if (overlayContent !== '' || nameContent !== '') {
+            if (effectOverlay) effectOverlay.innerHTML = overlayContent;
+            if (nameOverlay) nameOverlay.innerHTML = nameContent;
             
-            if (overlayContent !== '') {
-                overlayText.innerHTML = overlayContent;
-                if (overlayBtn) overlayBtn.classList.remove('hidden');
-                // Keep overlay state if already toggled on, otherwise leave it hidden
-                if (!overlayText.classList.contains('hidden') && bottomOverlay) {
-                    bottomOverlay.classList.add('hidden');
-                }
-            } else {
-                overlayText.innerHTML = '';
-                overlayText.classList.add('hidden'); // Force hide if empty
-                if (overlayBtn) {
-                    overlayBtn.classList.add('hidden');
-                    // Reset button appearance
-                    overlayBtn.classList.remove('text-white', 'bg-blue-600');
-                    overlayBtn.classList.add('text-white/50', 'bg-black/40');
-                }
-                if (bottomOverlay && info.name) {
-                    bottomOverlay.classList.remove('hidden');
-                }
+            if (overlayBtn) overlayBtn.classList.remove('hidden');
+            
+            // Keep overlay state if already toggled on
+            const isHidden = effectOverlay ? effectOverlay.classList.contains('hidden') : (nameOverlay ? nameOverlay.classList.contains('hidden') : true);
+            if (!isHidden && bottomOverlay) {
+                bottomOverlay.classList.add('hidden');
+            }
+        } else {
+            if (effectOverlay) effectOverlay.classList.add('hidden');
+            if (nameOverlay) nameOverlay.classList.add('hidden');
+            
+            if (overlayBtn) {
+                overlayBtn.classList.add('hidden');
+                overlayBtn.classList.remove('text-white', 'bg-blue-600');
+                overlayBtn.classList.add('text-white/50', 'bg-black/40');
+            }
+            if (bottomOverlay && info.name) {
+                bottomOverlay.classList.remove('hidden');
             }
         }
 
@@ -1187,16 +1197,26 @@ function changeLightboxCard(cardId) {
 function toggleLightboxEffectOverlay(e) {
     if (e) e.stopPropagation();
     const overlayText = document.getElementById('lightbox-img-effect-overlay');
+    const nameOverlay = document.getElementById('lightbox-img-name-overlay');
     const btn = document.getElementById('lightbox-effect-toggle');
     const bottomOverlay = document.getElementById('lightbox-overlay');
-    if (overlayText && btn) {
-        if (overlayText.classList.contains('hidden')) {
-            overlayText.classList.remove('hidden');
+    if (btn) {
+        let isHidden = true;
+        if (overlayText && overlayText.innerHTML.trim() !== '') {
+            isHidden = overlayText.classList.contains('hidden');
+        } else if (nameOverlay && nameOverlay.innerHTML.trim() !== '') {
+            isHidden = nameOverlay.classList.contains('hidden');
+        }
+        
+        if (isHidden) {
+            if (overlayText) overlayText.classList.remove('hidden');
+            if (nameOverlay) nameOverlay.classList.remove('hidden');
             btn.classList.add('text-white', 'bg-blue-600');
             btn.classList.remove('text-white/50', 'bg-black/40');
             if (bottomOverlay) bottomOverlay.classList.add('hidden');
         } else {
-            overlayText.classList.add('hidden');
+            if (overlayText) overlayText.classList.add('hidden');
+            if (nameOverlay) nameOverlay.classList.add('hidden');
             btn.classList.remove('text-white', 'bg-blue-600');
             btn.classList.add('text-white/50', 'bg-black/40');
             if (bottomOverlay) bottomOverlay.classList.remove('hidden');
