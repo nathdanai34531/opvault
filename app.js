@@ -2166,6 +2166,7 @@ async function processImageUpload(event) {
         
         await worker.setParameters({
             tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
+            tessedit_pageseg_mode: '11', // PSM 11: Sparse text. Find as much text as possible.
         });
         
         const result = await worker.recognize(file);
